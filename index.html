@@ -117,7 +117,7 @@
     </div>
 
     <div class="container" id="catalogo-container">
-        <div class="empty-msg">Cargando catálogo desde la nube...</div>
+        <div class="empty-msg">Cargando catálogo...</div>
     </div>
 
     <div class="store-info-footer">
@@ -157,7 +157,7 @@
                 <div class="form-group">
                     <label id="label-img">Foto Principal de la Camiseta</label>
                     <input type="file" id="img-input" accept="image/*">
-                    <small style="color: #64748b; display: block; margin-top: 4px;">Se comprime automáticamente para guardarse sin errores en la nube.</small>
+                    <small style="color: #64748b; display: block; margin-top: 4px;">Se reducirá automáticamente de tamaño para guardarse sin errores.</small>
                 </div>
                 <div class="modal-buttons">
                     <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
@@ -171,7 +171,8 @@
         const PASSWORD_ADMIN = "12345"; 
         const JSONBIN_API_KEY = "$2a$10$nUnNydsF98D3sFg/SlYxWOZ9MTqXMZN0Mj3beohqvkAah5E3uuvEG";
         
-        let binId = localStorage.getItem('gol_estilo_bin_id') || ""; 
+        // Creamos un código único y nuevo para forzar un espacio limpio en cero
+        let binId = localStorage.getItem('gol_estilo_bin_id_nuevo') || ""; 
         let productos = [];
         let categoriaSeleccionada = 'TODOS';
 
@@ -213,8 +214,7 @@
             })
             .catch(err => {
                 console.error("Error al cargar:", err);
-                productos = [];
-                renderCatalogo();
+                crearBinInicialEnNube();
             });
         }
 
@@ -224,16 +224,17 @@
                 headers: {
                     'Content-Type': 'application/json',
                     'X-Master-Key': JSONBIN_API_KEY,
-                    'X-Bin-Name': 'GolEstiloCatalogo'
+                    'X-Bin-Name': 'GolEstiloCatalogoLimpio'
                 },
                 body: JSON.stringify([])
             })
             .then(res => res.json())
             .then(data => {
                 binId = data.metadata.id;
-                localStorage.setItem('gol_estilo_bin_id', binId);
+                localStorage.setItem('gol_estilo_bin_id_nuevo', binId);
                 productos = [];
                 renderCatalogo();
+                chequearModoAdminGuardado();
             })
             .catch(err => {
                 console.error("Error al crear bin:", err);
@@ -244,34 +245,27 @@
 
         function guardarEnNube(nuevosProductos, callback) {
             const opcionesFetch = {
-                method: binId ? 'PUT' : 'POST',
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-Master-Key': JSONBIN_API_KEY,
-                    ...(binId ? {} : { 'X-Bin-Name': 'GolEstiloCatalogo' })
+                    'X-Master-Key': JSONBIN_API_KEY
                 },
                 body: JSON.stringify(nuevosProductos)
             };
 
-            const url = binId ? `https://api.jsonbin.io/v3/b/${binId}` : 'https://api.jsonbin.io/v3/b';
-
-            fetch(url, opcionesFetch)
+            fetch(`https://api.jsonbin.io/v3/b/${binId}`, opcionesFetch)
             .then(res => {
-                if (!res.ok) throw new Error("Error en la respuesta del servidor");
+                if (!res.ok) throw new Error("Error en la respuesta");
                 return res.json();
             })
-            .then(data => {
-                if (!binId) {
-                    binId = data.metadata.id;
-                    localStorage.setItem('gol_estilo_bin_id', binId);
-                }
+            .then(() => {
                 productos = nuevosProductos;
                 renderCatalogo();
                 if (callback) callback();
             })
             .catch(err => {
                 console.error("Error detallado:", err);
-                alert("⚠️ Error al guardar: La base de datos está llena. Borra alguna prenda vieja para poder agregar nuevas.");
+                alert("⚠️ Error: La foto sigue siendo muy pesada o la base de datos se llenó. Intenta usar otra foto más ligera.");
             });
         }
 
@@ -464,8 +458,8 @@
                     const img = new Image();
                     img.onload = function() {
                         const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 400;  
-                        const MAX_HEIGHT = 400;
+                        const MAX_WIDTH = 300;  
+                        const MAX_HEIGHT = 300;
                         let width = img.width;
                         let height = img.height;
 
@@ -480,7 +474,7 @@
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
 
-                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.5);
+                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.4);
                         procesarGuardadoFinal(editId, categoria, titulo, detalles, precio, compressedDataUrl);
                     };
                     img.src = event.target.result;
