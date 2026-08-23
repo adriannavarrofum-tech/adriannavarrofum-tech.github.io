@@ -5,22 +5,572 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gol & Estilo Sport - Catálogo Oficial</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f4; text-align: center; padding: 20px; }
-        h1 { color: #333; }
-        .card { background: white; max-width: 300px; margin: 20px auto; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .img-placeholder { background: linear-gradient(135deg, #007bff, #0056b3); color: white; padding: 40px 0; border-radius: 4px; font-weight: bold; font-size: 1.1em; margin-bottom: 15px; }
-        .precio { color: #28a745; font-weight: bold; font-size: 1.3em; }
+        :root { --primary: #059669; --bg: #f1f5f9; --card: #ffffff; --text: #0f172a; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg); color: var(--text); padding-bottom: 80px; }
+        
+        .announcement-bar { background: #047857; color: white; text-align: center; padding: 10px; font-size: 0.9rem; font-weight: 600; overflow: hidden; height: 40px; display: flex; align-items: center; justify-content: center; position: relative; }
+        .announcement-slide { position: absolute; width: 100%; opacity: 0; transition: opacity 0.5s ease-in-out; }
+        .announcement-slide.active { opacity: 1; }
+
+        header { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; text-align: center; padding: 25px 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .header-content { display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; max-width: 1200px; margin: 0 auto; }
+        .logo-tienda { max-width: 220px; height: auto; max-height: 85px; object-fit: contain; border-radius: 8px; }
+        .header-text h1 { font-size: 2rem; color: #34d399; font-weight: 800; letter-spacing: 1px; margin-bottom: 4px; text-transform: uppercase; text-align: left; }
+        .header-text p { color: #94a3b8; font-size: 1rem; font-weight: 500; text-align: left; }
+        @media (max-width: 600px) { .header-text h1, .header-text p { text-align: center; } }
+
+        .search-filter-container { max-width: 1200px; margin: 25px auto 10px auto; padding: 0 20px; display: flex; flex-direction: column; gap: 15px; }
+        .search-box { position: relative; width: 100%; }
+        .search-box input { width: 100%; padding: 12px 20px 12px 45px; border-radius: 30px; border: 1px solid #cbd5e1; font-size: 1rem; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.03); outline: none; transition: border-color 0.2s; }
+        .search-box input:focus { border-color: var(--primary); }
+        .search-box span { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); font-size: 1.2rem; color: #64748b; }
+
+        .filters-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
+        .filters-scroll::-webkit-scrollbar { display: none; }
+        .filter-chip { background: #e2e8f0; border: none; padding: 8px 16px; border-radius: 20px; font-weight: 600; color: #334155; cursor: pointer; white-space: nowrap; transition: background 0.2s, color 0.2s; }
+        .filter-chip.active { background: var(--primary); color: white; }
+
+        .container { max-width: 1200px; margin: 15px auto; padding: 0 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
+        .section-header { grid-column: 1 / -1; font-size: 1.4rem; font-weight: 800; color: #0f172a; margin-top: 20px; margin-bottom: 5px; padding-bottom: 10px; border-bottom: 3px solid #059669; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        .card { background: var(--card); border-radius: 14px; overflow: hidden; box-shadow: 0 6px 15px rgba(0,0,0,0.06); display: flex; flex-direction: column; border: 1px solid #e2e8f0; transition: transform 0.25s ease, box-shadow 0.25s ease; position: relative; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(0,0,0,0.1); }
+        
+        .card.agotado { opacity: 0.6; filter: grayscale(0.8); }
+        .badge-agotado { position: absolute; top: 10px; right: 10px; background: #dc2626; color: white; padding: 5px 10px; font-size: 0.8rem; font-weight: bold; border-radius: 6px; display: none; z-index: 10; }
+        .card.agotado .badge-agotado { display: block; }
+
+        .card-img-container { width: 100%; height: 280px; background-color: #f8fafc; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
+        .card-img { width: 100%; height: 100%; object-fit: cover; display: none; }
+        .card-img.active { display: block; }
+        
+        .carousel-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 5; }
+        .carousel-btn.prev { left: 10px; }
+        .carousel-btn.next { right: 10px; }
+        .carousel-dots { position: absolute; bottom: 8px; width: 100%; display: flex; justify-content: center; gap: 5px; z-index: 5; }
+        .dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.5); cursor: pointer; }
+        .dot.active { background: #ffffff; width: 15px; border-radius: 4px; }
+
+        .card-body { padding: 20px; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between; }
+        .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; color: #1e293b; line-height: 1.3; }
+        .card-details { font-size: 0.85rem; color: #64748b; margin-bottom: 10px; line-height: 1.4; background: #f8fafc; padding: 8px; border-radius: 6px; border-left: 3px solid var(--primary); }
+        .price { font-size: 1.2rem; font-weight: 800; color: var(--primary); margin-bottom: 12px; }
+
+        .size-selector { margin-bottom: 12px; }
+        .size-selector label { font-size: 0.8rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px; text-transform: uppercase; }
+        .sizes-flex { display: flex; gap: 5px; }
+        .size-btn { flex: 1; padding: 6px 2px; font-size: 0.8rem; font-weight: 700; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; cursor: pointer; text-align: center; color: #334155; transition: all 0.2s; }
+        .size-btn.selected { background: var(--primary); color: white; border-color: var(--primary); }
+        
+        .btn-ws { background-color: #25D366; color: #ffffff; text-decoration: none; padding: 12px; border-radius: 8px; font-weight: 700; text-align: center; display: block; font-size: 0.95rem; transition: background 0.2s; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.2); }
+        .card.agotado .btn-ws { background-color: #94a3b8; pointer-events: none; box-shadow: none; }
+
+        .admin-controls { display: none; margin-top: 12px; flex-direction: column; gap: 6px; }
+        body.admin-mode .admin-controls { display: flex; }
+        .admin-row { display: flex; gap: 5px; }
+        .btn-admin { padding: 6px; font-size: 0.8rem; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; flex: 1; }
+        .btn-toggle { background: #d97706; }
+        .btn-edit { background: #2563eb; }
+        .btn-delete { background: #dc2626; }
+
+        .store-info-footer { max-width: 1200px; margin: 40px auto 20px auto; padding: 20px; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; flex-wrap: wrap; justify-content: space-around; text-align: center; gap: 20px; }
+        .info-box { flex: 1; min-width: 250px; }
+        .info-box h4 { color: #0f172a; font-size: 1rem; margin-bottom: 8px; font-weight: 700; }
+        .info-box p { color: #64748b; font-size: 0.9rem; line-height: 1.4; }
+
+        #fab-admin { position: fixed; bottom: 20px; right: 20px; background: #0f172a; color: white; border: none; border-radius: 50px; width: 50px; height: 50px; font-size: 20px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1000; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+        body.admin-mode #fab-admin { background: #059669; }
+        
+        #admin-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center; padding: 20px; }
+        .modal-content { background: white; padding: 25px; border-radius: 12px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        .modal-content h3 { margin-bottom: 15px; color: #0f172a; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 0.9rem; }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1rem; }
+        .form-group textarea { resize: vertical; height: 70px; }
+        .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+        .btn { padding: 10px 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-primary { background: #059669; color: white; }
+        .btn-secondary { background: #64748b; color: white; }
+        .empty-msg { text-align: center; grid-column: 1 / -1; color: #64748b; padding: 40px; font-size: 1.1rem; }
     </style>
 </head>
 <body>
-    <h1>Gol & Estilo Sport</h1>
-    <p>Catálogo Oficial</p>
-    
-    <div class="card">
-        <div class="img-placeholder">⚽ Camiseta Oficial</div>
-        <h2>Camiseta de Prueba</h2>
-        <p>Probando si carga el sistema</p>
-        <p class="precio">$20</p>
+
+    <div class="announcement-bar">
+        <div class="announcement-slide active">🚀 ¡Envíos seguros a todo el país por MRW!</div>
+        <div class="announcement-slide">💳 Métodos de pago: Pago Móvil, Binance y Efectivo</div>
+        <div class="announcement-slide">⚽ Las mejores camisetas de fútbol al mejor estilo</div>
     </div>
+
+    <header>
+        <div class="header-content">
+            <img src="https://i.imgur.com/7.png" alt="Logo Gol & Estilo Sport" class="logo-tienda" id="logo-img" onerror="this.src='https://via.placeholder.com/220x75?text=Gol+%26+Estilo'">
+            <div class="header-text">
+                <h1>Gol & Estilo Sport</h1>
+                <p>Catálogo Oficial de Camisetas de Fútbol</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="search-filter-container">
+        <div class="search-box">
+            <span>🔍</span>
+            <input type="text" id="search-input" placeholder="Buscar camiseta por nombre o equipo..." oninput="filtrarCatalogo()">
+        </div>
+        <div class="filters-scroll" id="filters-container">
+            <button class="filter-chip active" onclick="filtrarPorCategoria('TODOS', this)">Todos</button>
+        </div>
+    </div>
+
+    <div class="container" id="catalogo-container">
+        <div class="empty-msg">Cargando catálogo desde Firestore...</div>
+    </div>
+
+    <div class="store-info-footer">
+        <div class="info-box">
+            <h4>💳 Métodos de Pago</h4>
+            <p>Aceptamos Pago Móvil, Binance (USDT) y Efectivo.</p>
+        </div>
+        <div class="info-box">
+            <h4>📦 Envíos Seguros</h4>
+            <p>Envíos garantizados a nivel nacional exclusivamente a través de <b>MRW</b>.</p>
+        </div>
+    </div>
+
+    <button id="fab-admin" onclick="accionBotonAdmin()" title="Panel Administrador">⚙️</button>
+
+    <div id="admin-modal">
+        <div class="modal-content">
+            <h3 id="modal-title">Panel de Control - Agregar Prenda</h3>
+            <form id="product-form" onsubmit="guardarProducto(event)">
+                <input type="hidden" id="edit-id" value="">
+                <div class="form-group">
+                    <label>Categoría / Equipo (Ej: 🔵🔴 FC Barcelona)</label>
+                    <input type="text" id="cat-input" required placeholder="🔵🔴 FC Barcelona">
+                </div>
+                <div class="form-group">
+                    <label>Nombre de la Camiseta</label>
+                    <input type="text" id="title-input" required placeholder="PSG local con parches">
+                </div>
+                <div class="form-group">
+                    <label>Detalles / Descripción (Ej: Incluye parches, tela Dri-FIT)</label>
+                    <textarea id="details-input" placeholder="Ej: Escudo bordado, tela de alta calidad, parches oficiales..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Precio</label>
+                    <input type="text" id="price-input" required value="$20.00">
+                </div>
+                <div class="form-group">
+                    <label id="label-img">Fotos de la Camiseta (¡Puedes seleccionar varias a la vez!)</label>
+                    <input type="file" id="img-input" accept="image/*" multiple>
+                    <small style="color: #64748b; display: block; margin-top: 4px;">Selecciona todas las fotos que quieras (frente, espalda, detalles).</small>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="btn-submit-text">Agregar al Catálogo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SDKs de Firebase (Firestore) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyBXBiHp5C5f0-mkbwiTroq2ij3ui-ImbNg",
+          authDomain: "gol--estilo-sport-903f2.firebaseapp.com",
+          projectId: "gol--estilo-sport-903f2",
+          storageBucket: "gol--estilo-sport-903f2.firebasestorage.app",
+          messagingSenderId: "62035978995",
+          appId: "1:62035978995:web:eb6b982106876b40cfa586",
+          measurementId: "G-R3KSWY1VDJ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const PASSWORD_ADMIN = "12345"; 
+        let productos = [];
+        let categoriaSeleccionada = 'TODOS';
+
+        let currentSlide = 0;
+        setInterval(() => {
+            const slides = document.querySelectorAll('.announcement-slide');
+            if(slides.length > 0) {
+                slides[currentSlide].classList.remove('active');
+                currentSlide = (currentSlide + 1) % slides.length;
+                slides[currentSlide].classList.add('active');
+            }
+        }, 3500);
+
+        window.onload = function() {
+            cargarProductosDesdeFirestore();
+        };
+
+        async function cargarProductosDesdeFirestore() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "productos"));
+                productos = [];
+                querySnapshot.forEach((docSnap) => {
+                    let data = docSnap.data();
+                    productos.push({
+                        id: docSnap.id,
+                        ...data,
+                        imagenes: data.imagenes && data.imagenes.length > 0 ? data.imagenes : (data.img ? [data.img] : [])
+                    });
+                });
+                renderCatalogo();
+                chequearModoAdminGuardado();
+            } catch (error) {
+                console.error("Error al cargar productos: ", error);
+                document.getElementById('catalogo-container').innerHTML = `<div class="empty-msg">Error al conectar con la base de datos de Firebase.</div>`;
+            }
+        }
+
+        window.renderCatalogo = function() {
+            const container = document.getElementById('catalogo-container');
+            const searchText = document.getElementById('search-input').value.toLowerCase().trim();
+            container.innerHTML = '';
+
+            if (productos.length === 0) {
+                container.innerHTML = `<div class="empty-msg">El catálogo está vacío. Toca la tuerca (⚙️) abajo a la derecha, ingresa la contraseña <b>12345</b> y agrega tu primera prenda.</div>`;
+                actualizarFiltros([]);
+                return;
+            }
+
+            let prodsFiltrados = productos.filter(p => {
+                const coincideTexto = p.titulo.toLowerCase().includes(searchText) || p.categoria.toLowerCase().includes(searchText) || (p.detalles && p.detalles.toLowerCase().includes(searchText));
+                const coincideCat = (categoriaSeleccionada === 'TODOS' || p.categoria === categoriaSeleccionada);
+                return coincideTexto && coincideCat;
+            });
+
+            actualizarFiltros([...new Set(productos.map(p => p.categoria))]);
+
+            if (prodsFiltrados.length === 0) {
+                container.innerHTML = `<div class="empty-msg">No se encontraron camisetas con esa búsqueda.</div>`;
+                return;
+            }
+
+            const categoriasUnicas = [...new Set(prodsFiltrados.map(p => p.categoria))];
+
+            categoriasUnicas.forEach(cat => {
+                const sectionDiv = document.createElement('div');
+                sectionDiv.className = 'section-header';
+                sectionDiv.innerText = cat;
+                container.appendChild(sectionDiv);
+
+                const prodsCat = prodsFiltrados.filter(p => p.categoria === cat);
+
+                prodsCat.forEach(p => {
+                    const card = document.createElement('div');
+                    card.className = `card ${p.agotado ? 'agotado' : ''}`;
+
+                    let detallesHtml = p.detalles ? `<div class="card-details">📌 ${p.detalles}</div>` : '';
+                    let imgs = p.imagenes && p.imagenes.length > 0 ? p.imagenes : [p.img || 'https://via.placeholder.com/300'];
+
+                    let imgsHtml = '';
+                    let dotsHtml = '';
+                    imgs.forEach((imgUrl, index) => {
+                        imgsHtml += `<img src="${imgUrl}" class="card-img ${index === 0 ? 'active' : ''}" data-index="${index}" alt="${p.titulo}">`;
+                        dotsHtml += `<span class="dot ${index === 0 ? 'active' : ''}" onclick="window.cambiarImagenCard('${p.id}', ${index})"></span>`;
+                    });
+
+                    let controlesCarrusel = imgs.length > 1 ? `
+                        <button class="carousel-btn prev" onclick="window.moverCarrusel('${p.id}', -1)">&#10094;</button>
+                        <button class="carousel-btn next" onclick="window.moverCarrusel('${p.id}', 1)">&#10095;</button>
+                        <div class="carousel-dots" id="dots-${p.id}">${dotsHtml}</div>
+                    ` : '';
+
+                    card.innerHTML = `
+                        <div class="badge-agotado">AGOTADO</div>
+                        <div class="card-img-container" id="carousel-${p.id}">
+                            ${imgsHtml}
+                            ${controlesCarrusel}
+                        </div>
+                        <div class="card-body">
+                            <div>
+                                <h2 class="card-title">${p.titulo}</h2>
+                                ${detallesHtml}
+                                <div class="price">${p.precio}</div>
+                                <div class="size-selector">
+                                    <label>Selecciona tu Talla:</label>
+                                    <div class="sizes-flex" id="sizes-${p.id}">
+                                        <button class="size-btn selected" onclick="window.seleccionarTalla(this, '${p.id}', 'S')">S</button>
+                                        <button class="size-btn" onclick="window.seleccionarTalla(this, '${p.id}', 'M')">M</button>
+                                        <button class="size-btn" onclick="window.seleccionarTalla(this, '${p.id}', 'L')">L</button>
+                                        <button class="size-btn" onclick="window.seleccionarTalla(this, '${p.id}', 'XL')">XL</button>
+                                        <button class="size-btn" onclick="window.seleccionarTalla(this, '${p.id}', 'XXL')">XXL</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="#" onclick="window.enviarWhatsApp(event, '${p.titulo}', '${p.id}')" class="btn-ws">Pedir por WhatsApp</a>
+                            <div class="admin-controls">
+                                <div class="admin-row">
+                                    <button class="btn-admin btn-toggle" onclick="window.toggleAgotado('${p.id}', ${Boolean(p.agotado)})">${p.agotado ? 'Disponible' : 'Agotar'}</button>
+                                    <button class="btn-admin btn-edit" onclick="window.abrirEditarProducto('${p.id}')">Editar</button>
+                                </div>
+                                <div class="admin-row">
+                                    <button class="btn-admin btn-delete" onclick="window.eliminarProducto('${p.id}')">Eliminar Prenda</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            });
+        }
+
+        window.moverCarrusel = function(prodId, direccion) {
+            const container = document.getElementById(`carousel-${prodId}`);
+            if (!container) return;
+            const imgs = container.querySelectorAll('.card-img');
+            const dots = document.querySelectorAll(`#dots-${prodId} .dot`);
+            let currentIndex = Array.from(imgs).findIndex(img => img.classList.contains('active'));
+            
+            if (currentIndex === -1) currentIndex = 0;
+            imgs[currentIndex].classList.remove('active');
+            if(dots.length > 0 && dots[currentIndex]) dots[currentIndex].classList.remove('active');
+
+            let nuevoIndex = currentIndex + direccion;
+            if (nuevoIndex >= imgs.length) nuevoIndex = 0;
+            if (nuevoIndex < 0) nuevoIndex = imgs.length - 1;
+
+            imgs[nuevoIndex].classList.add('active');
+            if(dots.length > 0 && dots[nuevoIndex]) dots[nuevoIndex].classList.add('active');
+        }
+
+        window.cambiarImagenCard = function(prodId, index) {
+            const container = document.getElementById(`carousel-${prodId}`);
+            if (!container) return;
+            const imgs = container.querySelectorAll('.card-img');
+            const dots = document.querySelectorAll(`#dots-${prodId} .dot`);
+
+            imgs.forEach(img => img.classList.remove('active'));
+            dots.forEach(d => d.classList.remove('active'));
+
+            if (imgs[index]) imgs[index].classList.add('active');
+            if (dots[index]) dots[index].classList.add('active');
+        }
+
+        window.seleccionarTalla = function(btn, prodId, talla) {
+            const contenedor = document.getElementById(`sizes-${prodId}`);
+            contenedor.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+        }
+
+        window.enviarWhatsApp = function(e, titulo, prodId) {
+            e.preventDefault();
+            const contenedor = document.getElementById(`sizes-${prodId}`);
+            const tallaBtn = contenedor.querySelector('.size-btn.selected');
+            const tallaSeleccionada = tallaBtn ? tallaBtn.innerText : 'Única';
+            const mensajeWsp = encodeURIComponent(`Hola, me interesa la camisa ${titulo} en talla ${tallaSeleccionada}.`);
+            window.open(`https://wa.me/584128539283?text=${mensajeWsp}`, '_blank');
+        }
+
+        function actualizarFiltros(categorias) {
+            const container = document.getElementById('filters-container');
+            let html = `<button class="filter-chip ${categoriaSeleccionada === 'TODOS' ? 'active' : ''}" onclick="window.filtrarPorCategoria('TODOS', this)">Todos</button>`;
+            
+            categorias.forEach(cat => {
+                html += `<button class="filter-chip ${categoriaSeleccionada === cat ? 'active' : ''}" onclick="window.filtrarPorCategoria('${cat}', this)">${cat}</button>`;
+            });
+            container.innerHTML = html;
+        }
+
+        window.filtrarPorCategoria = function(cat, elemento) {
+            categoriaSeleccionada = cat;
+            document.querySelectorAll('.filter-chip').forEach(btn => btn.classList.remove('active'));
+            elemento.classList.add('active');
+            renderCatalogo();
+        }
+
+        window.filtrarCatalogo = function() {
+            renderCatalogo();
+        }
+
+        function chequearModoAdminGuardado() {
+            let esAdmin = sessionStorage.getItem('gol_admin_activo') === 'true';
+            if (esAdmin) {
+                document.body.classList.add('admin-mode');
+                document.getElementById('fab-admin').innerText = "➕";
+                document.getElementById('fab-admin').title = "Agregar Nueva Prenda";
+            }
+        }
+
+        window.accionBotonAdmin = function() {
+            let esAdmin = sessionStorage.getItem('gol_admin_activo') === 'true';
+            if (!esAdmin) {
+                let pass = prompt("Ingrese la contraseña de Administrador:");
+                if (pass === PASSWORD_ADMIN) {
+                    sessionStorage.setItem('gol_admin_activo', 'true');
+                    document.body.classList.add('admin-mode');
+                    document.getElementById('fab-admin').innerText = "➕";
+                    document.getElementById('fab-admin').title = "Agregar Nueva Prenda";
+                    abrirModalNuevo();
+                } else if (pass !== null) {
+                    alert("Contraseña incorrecta");
+                }
+            } else {
+                abrirModalNuevo();
+            }
+        }
+
+        function abrirModalNuevo() {
+            document.getElementById('modal-title').innerText = "Panel de Control - Agregar Prenda";
+            document.getElementById('btn-submit-text').innerText = "Guardar en Firestore";
+            document.getElementById('product-form').reset();
+            document.getElementById('edit-id').value = "";
+            document.getElementById('img-input').required = true;
+            document.getElementById('label-img').innerText = "Fotos de la Camiseta (Selecciona varias)";
+            document.getElementById('admin-modal').style.display = 'flex';
+        }
+
+        window.abrirEditarProducto = function(id) {
+            const p = productos.find(item => String(item.id) === String(id));
+            if (!p) return;
+
+            document.getElementById('modal-title').innerText = "Editar Prenda";
+            document.getElementById('btn-submit-text').innerText = "Actualizar en Firestore";
+            document.getElementById('edit-id').value = p.id;
+            document.getElementById('cat-input').value = p.categoria;
+            document.getElementById('title-input').value = p.titulo;
+            document.getElementById('details-input').value = p.detalles || "";
+            document.getElementById('price-input').value = p.precio;
+            
+            document.getElementById('img-input').required = false;
+            document.getElementById('label-img').innerText = "Nuevas Fotos (Opcional, si deseas cambiarlas)";
+            
+            document.getElementById('admin-modal').style.display = 'flex';
+        }
+
+        window.cerrarModal = function() {
+            document.getElementById('admin-modal').style.display = 'none';
+        }
+
+        window.guardarProducto = function(e) {
+            e.preventDefault();
+            const editId = document.getElementById('edit-id').value;
+            const fileInput = document.getElementById('img-input');
+            
+            const categoria = document.getElementById('cat-input').value;
+            const titulo = document.getElementById('title-input').value;
+            const detalles = document.getElementById('details-input').value;
+            const precio = document.getElementById('price-input').value;
+
+            if (fileInput.files.length > 0) {
+                let archivos = Array.from(fileInput.files);
+                let imagenesProcesadas = [];
+                let procesadosCount = 0;
+
+                archivos.forEach((file) => {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const img = new Image();
+                        img.onload = function() {
+                            const canvas = document.createElement('canvas');
+                            const MAX_WIDTH = 500;  
+                            const MAX_HEIGHT = 500;
+                            let width = img.width;
+                            let height = img.height;
+
+                            if (width > height) {
+                                if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                            } else {
+                                if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+                            }
+
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+
+                            const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                            imagenesProcesadas.push(compressedDataUrl);
+                            procesadosCount++;
+
+                            if (procesadosCount === archivos.length) {
+                                ejecutarGuardadoFirestore(editId, categoria, titulo, detalles, precio, imagenesProcesadas);
+                            }
+                        };
+                        img.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                });
+            } else {
+                if (editId) {
+                    const pExistente = productos.find(item => String(item.id) === String(editId));
+                    const imgsAntiguas = pExistente ? (pExistente.imagenes || [pExistente.img]) : [];
+                    ejecutarGuardadoFirestore(editId, categoria, titulo, detalles, precio, imgsAntiguas);
+                } else {
+                    alert("Por favor selecciona al menos una imagen.");
+                }
+            }
+        }
+
+        async function ejecutarGuardadoFirestore(editId, categoria, titulo, detalles, precio, imagenes) {
+            try {
+                if (editId) {
+                    const docRef = doc(db, "productos", editId);
+                    const pExistente = productos.find(item => String(item.id) === String(editId));
+                    const imgsFinales = imagenes.length > 0 ? imagenes : (pExistente ? pExistente.imagenes : []);
+                    
+                    await updateDoc(docRef, {
+                        categoria,
+                        titulo,
+                        detalles,
+                        precio,
+                        imagenes: imgsFinales,
+                        img: imgsFinales[0] || ""
+                    });
+                    alert("✅ ¡Prenda actualizada en Firestore con éxito!");
+                } else {
+                    await addDoc(collection(db, "productos"), {
+                        categoria,
+                        titulo,
+                        detalles,
+                        precio,
+                        imagenes,
+                        img: imagenes[0] || "",
+                        agotado: false
+                    });
+                    alert("✅ ¡Prenda guardada en Firestore con éxito!");
+                }
+                cerrarModal();
+                cargarProductosDesdeFirestore();
+            } catch (error) {
+                console.error("Error al guardar en Firestore: ", error);
+                alert("Hubo un error al guardar en la base de datos.");
+            }
+        }
+
+        window.toggleAgotado = async function(id, estadoActual) {
+            try {
+                const docRef = doc(db, "productos", id);
+                await updateDoc(docRef, {
+                    agotado: !estadoActual
+                });
+                cargarProductosDesdeFirestore();
+            } catch (error) {
+                console.error("Error al cambiar estado: ", error);
+            }
+        }
+
+        window.eliminarProducto = async function(id) {
+            if(confirm("¿Seguro que deseas eliminar esta prenda de Firestore?")) {
+                try {
+                    await deleteDoc(doc(db, "productos", id));
+                    alert("🗑️ Prenda eliminada.");
+                    cargarProductosDesdeFirestore();
+                } catch (error) {
+                    console.error("Error al eliminar: ", error);
+                    alert("Hubo un error al eliminar la prenda.");
+                }
+            }
+        }
+    </script>
 </body>
 </html>
