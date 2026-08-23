@@ -92,13 +92,9 @@
         .btn-primary { background: #059669; color: white; }
         .btn-secondary { background: #64748b; color: white; }
         .empty-msg { text-align: center; grid-column: 1 / -1; color: #64748b; padding: 40px; font-size: 1.1rem; }
-        
-        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 3000; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; font-weight: bold; color: #059669; }
     </style>
 </head>
 <body>
-
-    <div id="loading-overlay">Cargando catálogo desde la nube...</div>
 
     <div class="announcement-bar">
         <div class="announcement-slide active">🚀 ¡Envíos seguros a todo el país por MRW!</div>
@@ -126,7 +122,9 @@
         </div>
     </div>
 
-    <div class="container" id="catalogo-container"></div>
+    <div class="container" id="catalogo-container">
+        <div class="empty-msg">Cargando catálogo...</div>
+    </div>
 
     <div class="store-info-footer">
         <div class="info-box">
@@ -207,26 +205,22 @@
                 }
             })
             .then(res => {
-                if (!res.ok) throw new Error("Error al conectar con la nube");
+                if (!res.ok) throw new Error("Error al conectar");
                 return res.json();
             })
             .then(data => {
                 productos = data.record || [];
                 renderCatalogo();
-                document.getElementById('loading-overlay').style.display = 'none';
                 chequearModoAdminGuardado();
             })
             .catch(err => {
-                console.error("Error al cargar de la nube:", err);
-                document.getElementById('loading-overlay').style.display = 'none';
+                console.error("Error al cargar:", err);
                 productos = [];
                 renderCatalogo();
             });
         }
 
         function crearBinInicialEnNube() {
-            document.getElementById('loading-overlay').innerText = "Inicializando catálogo en la nube...";
-            
             fetch('https://api.jsonbin.io/v3/b', {
                 method: 'POST',
                 headers: {
@@ -242,20 +236,15 @@
                 localStorage.setItem('gol_estilo_bin_id', binId);
                 productos = [];
                 renderCatalogo();
-                document.getElementById('loading-overlay').style.display = 'none';
             })
             .catch(err => {
-                console.error("Error al crear el bin inicial:", err);
-                document.getElementById('loading-overlay').style.display = 'none';
+                console.error("Error al crear bin:", err);
                 productos = [];
                 renderCatalogo();
             });
         }
 
         function guardarEnNube(nuevosProductos, callback) {
-            document.getElementById('loading-overlay').style.display = 'flex';
-            document.getElementById('loading-overlay').innerText = "Guardando cambios en la nube...";
-
             if (!binId) {
                 fetch('https://api.jsonbin.io/v3/b', {
                     method: 'POST',
@@ -272,13 +261,11 @@
                     localStorage.setItem('gol_estilo_bin_id', binId);
                     productos = nuevosProductos;
                     renderCatalogo();
-                    document.getElementById('loading-overlay').style.display = 'none';
                     if (callback) callback();
                 })
                 .catch(err => {
-                    alert("Error al conectar con la nube.");
+                    alert("Error al guardar en la nube.");
                     console.error(err);
-                    document.getElementById('loading-overlay').style.display = 'none';
                 });
             } else {
                 fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
@@ -293,13 +280,11 @@
                 .then(data => {
                     productos = nuevosProductos;
                     renderCatalogo();
-                    document.getElementById('loading-overlay').style.display = 'none';
                     if (callback) callback();
                 })
                 .catch(err => {
                     alert("Error al actualizar la nube.");
                     console.error(err);
-                    document.getElementById('loading-overlay').style.display = 'none';
                 });
             }
         }
@@ -621,3 +606,5 @@
     </script>
 </body>
 </html>
+
+                
