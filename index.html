@@ -41,8 +41,17 @@
         .badge-agotado { position: absolute; top: 10px; right: 10px; background: #dc2626; color: white; padding: 5px 10px; font-size: 0.8rem; font-weight: bold; border-radius: 6px; display: none; z-index: 10; }
         .card.agotado .badge-agotado { display: block; }
 
+        /* Carrusel de múltiples imágenes */
         .card-img-container { width: 100%; height: 280px; background-color: #f8fafc; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
-        .card-img { width: 100%; height: 100%; object-fit: cover; }
+        .card-img { width: 100%; height: 100%; object-fit: cover; display: none; }
+        .card-img.active { display: block; }
+        
+        .carousel-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 5; }
+        .carousel-btn.prev { left: 10px; }
+        .carousel-btn.next { right: 10px; }
+        .carousel-dots { position: absolute; bottom: 8px; width: 100%; display: flex; justify-content: center; gap: 5px; z-index: 5; }
+        .dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.5); cursor: pointer; }
+        .dot.active { background: #ffffff; width: 15px; border-radius: 4px; }
 
         .card-body { padding: 20px; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between; }
         .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; color: #1e293b; line-height: 1.3; }
@@ -117,7 +126,7 @@
     </div>
 
     <div class="container" id="catalogo-container">
-        <div class="empty-msg">Sincronizando con GitHub...</div>
+        <div class="empty-msg">Cargando catálogo...</div>
     </div>
 
     <div class="store-info-footer">
@@ -155,9 +164,9 @@
                     <input type="text" id="price-input" required value="$20.00 / 23 a BCV">
                 </div>
                 <div class="form-group">
-                    <label id="label-img">Foto Principal de la Camiseta</label>
-                    <input type="file" id="img-input" accept="image/*">
-                    <small style="color: #64748b; display: block; margin-top: 4px;">Se optimizará automáticamente para guardarse en GitHub.</small>
+                    <label id="label-img">Fotos de la Camiseta (¡Puedes seleccionar varias a la vez!)</label>
+                    <input type="file" id="img-input" accept="image/*" multiple>
+                    <small style="color: #64748b; display: block; margin-top: 4px;">Selecciona todas las fotos que quieras (frente, espalda, detalles).</small>
                 </div>
                 <div class="modal-buttons">
                     <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
@@ -169,15 +178,7 @@
 
     <script>
         const PASSWORD_ADMIN = "12345"; 
-        
-        // CONFIGURACIÓN DE TU REPOSITORIO GITHUB
-        const GH_USER = "adriannavarrofum-tech";
-        const GH_REPO = "adriannavarrofum-tech.github.io";
-        const GH_FILE_PATH = "productos.json";
-        const GH_TOKEN = "Ghp_olDvgB0Euz3YnsPgXa3zOZK3HEtsoP3kJGi0"; // Tu Token configurado
-
         let productos = [];
-        let fileSha = ""; // Necesario para actualizar archivos en GitHub
         let categoriaSeleccionada = 'TODOS';
 
         let currentSlide = 0;
@@ -191,84 +192,55 @@
         }, 3500);
 
         window.onload = function() {
-            cargarProductosGitHub();
+            cargarProductos();
         };
 
-        function cargarProductosGitHub() {
-            const url = `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FILE_PATH}`;
-            
-            fetch(url, {
-                headers: {
-                    'Authorization': `token ${GH_TOKEN}`,
-                    'Accept': 'application/vnd.github.v3+json'
-                }
-            })
-            .then(res => {
-                if (res.status === 404) {
-                    // Si el archivo no existe aún, devolvemos array vacío
-                    return { content: btoa(JSON.stringify([])), sha: "" };
-                }
-                if (!res.ok) throw new Error("Error al conectar con GitHub");
-                return res.json();
-            })
-            .then(data => {
-                fileSha = data.sha || "";
-                if (data.content) {
-                    // Decodificar contenido Base64 de GitHub a texto JSON
-                    const jsonString = decodeURIComponent(escape(atob(data.content)));
-                    productos = JSON.parse(jsonString);
-                } else {
-                    productos = [];
-                }
-                renderCatalogo();
-                chequearModoAdminGuardado();
-            })
-            .catch(err => {
-                console.error("Error al cargar:", err);
-                productos = [];
-                renderCatalogo();
-                chequearModoAdminGuardado();
-            });
+        function cargarProductos() {
+            fetch('productos.json?' + new Date().getTime())
+                .then(res => {
+                    if (!res.ok) throw new Error("No hay archivo externo");
+                    return res.json();
+                })
+                .then(data => {
+                    productos = data.map(p => ({
+                        ...p,
+                        imagenes: p.imagenes || (p.img ? [p.img] : []) // Compatibilidad con productos viejos
+                    }));
+                    localStorage.setItem('gol_productos_cache', JSON.stringify(productos));
+                    renderCatalogo();
+                    chequearModoAdminGuardado();
+                })
+                .catch(() => {
+                    const local = localStorage.getItem('gol_productos_cache');
+                    if (local) {
+                        try { 
+                            productos = JSON.parse(local).map(p => ({
+                                ...p,
+                                imagenes: p.imagenes || (p.img ? [p.img] : [])
+                            })); 
+                        } catch(e) { productos = []; }
+                    } else {
+                        productos = [];
+                    }
+                    renderCatalogo();
+                    chequearModoAdminGuardado();
+                });
         }
 
-        function guardarEnGitHub(nuevosProductos, callback) {
-            const url = `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FILE_PATH}`;
-            const jsonString = JSON.stringify(nuevosProductos, null, 2);
-            // Codificar texto a Base64 apto para caracteres especiales
-            const contentBase64 = btoa(unescape(encodeURIComponent(jsonString)));
+        function sincronizarCambios(nuevosProds) {
+            productos = nuevosProds;
+            localStorage.setItem('gol_productos_cache', JSON.stringify(nuevosProds));
+            renderCatalogo();
 
-            const bodyData = {
-                message: "Actualización automática del catálogo desde la web",
-                content: contentBase64
-            };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(nuevosProds, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "productos.json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
 
-            if (fileSha) {
-                bodyData.sha = fileSha; // GitHub exige el SHA actual para sobrescribir archivos
-            }
-
-            fetch(url, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `token ${GH_TOKEN}`,
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/vnd.github.v3+json'
-                },
-                body: JSON.stringify(bodyData)
-            })
-            .then(res => {
-                if (!res.ok) throw new Error("Error al guardar en GitHub");
-                return res.json();
-            })
-            .then(data => {
-                fileSha = data.content.sha; // Actualizamos el SHA para futuras modificaciones
-                productos = nuevosProductos;
-                renderCatalogo();
-                if (callback) callback();
-            })
-            .catch(err => {
-                console.error("Error:", err);
-                alert("⚠️ Error al sincronizar con GitHub. Revisa tu conexión a internet.");
-            });
+            alert("✅ ¡Prenda guardada!\n\nSe ha descargado el archivo 'productos.json'. Súbelo a tu repositorio de GitHub para reflejarlo en la nube.");
         }
 
         function renderCatalogo() {
@@ -277,7 +249,7 @@
             container.innerHTML = '';
 
             if (productos.length === 0) {
-                container.innerHTML = `<div class="empty-msg">El catálogo está vacío. Toca la tuerca (⚙️) abajo a la derecha, ingresa la contraseña <b>12345</b> y agrega tu primera prenda. Se sincronizará en todos tus teléfonos.</div>`;
+                container.innerHTML = `<div class="empty-msg">El catálogo está vacío. Toca la tuerca (⚙️) abajo a la derecha, ingresa la contraseña <b>12345</b> y agrega tu primera prenda.</div>`;
                 actualizarFiltros([]);
                 return;
             }
@@ -310,11 +282,27 @@
                     card.className = `card ${p.agotado ? 'agotado' : ''}`;
 
                     let detallesHtml = p.detalles ? `<div class="card-details">📌 ${p.detalles}</div>` : '';
+                    let imgs = p.imagenes && p.imagenes.length > 0 ? p.imagenes : [p.img || 'https://via.placeholder.com/300'];
+
+                    // Generar HTML del carrusel de imágenes
+                    let imgsHtml = '';
+                    let dotsHtml = '';
+                    imgs.forEach((imgUrl, index) => {
+                        imgsHtml += `<img src="${imgUrl}" class="card-img ${index === 0 ? 'active' : ''}" data-index="${index}" alt="${p.titulo}">`;
+                        dotsHtml += `<span class="dot ${index === 0 ? 'active' : ''}" onclick="cambiarImagenCard(${p.id}, ${index})"></span>`;
+                    });
+
+                    let controlesCarrusel = imgs.length > 1 ? `
+                        <button class="carousel-btn prev" onclick="moverCarrusel(${p.id}, -1)">&#10094;</button>
+                        <button class="carousel-btn next" onclick="moverCarrusel(${p.id}, 1)">&#10095;</button>
+                        <div class="carousel-dots" id="dots-${p.id}">${dotsHtml}</div>
+                    ` : '';
 
                     card.innerHTML = `
                         <div class="badge-agotado">AGOTADO</div>
-                        <div class="card-img-container">
-                            <img src="${p.img}" class="card-img" alt="${p.titulo}">
+                        <div class="card-img-container" id="carousel-${p.id}">
+                            ${imgsHtml}
+                            ${controlesCarrusel}
                         </div>
                         <div class="card-body">
                             <div>
@@ -347,6 +335,36 @@
                     container.appendChild(card);
                 });
             });
+        }
+
+        // Funciones del carrusel de fotos
+        function moverCarrusel(prodId, direccion) {
+            const container = document.getElementById(`carousel-${prodId}`);
+            const imgs = container.querySelectorAll('.card-img');
+            const dots = document.querySelectorAll(`#dots-${prodId} .dot`);
+            let currentIndex = Array.from(imgs).findIndex(img => img.classList.contains('active'));
+            
+            imgs[currentIndex].classList.remove('active');
+            if(dots.length > 0) dots[currentIndex].classList.remove('active');
+
+            let nuevoIndex = currentIndex + direccion;
+            if (nuevoIndex >= imgs.length) nuevoIndex = 0;
+            if (nuevoIndex < 0) nuevoIndex = imgs.length - 1;
+
+            imgs[nuevoIndex].classList.add('active');
+            if(dots.length > 0) dots[nuevoIndex].classList.add('active');
+        }
+
+        function cambiarImagenCard(prodId, index) {
+            const container = document.getElementById(`carousel-${prodId}`);
+            const imgs = container.querySelectorAll('.card-img');
+            const dots = document.querySelectorAll(`#dots-${prodId} .dot`);
+
+            imgs.forEach(img => img.classList.remove('active'));
+            dots.forEach(d => d.classList.remove('active'));
+
+            imgs[index].classList.add('active');
+            dots[index].classList.add('active');
         }
 
         function seleccionarTalla(btn, prodId, talla) {
@@ -417,7 +435,7 @@
             document.getElementById('product-form').reset();
             document.getElementById('edit-id').value = "";
             document.getElementById('img-input').required = true;
-            document.getElementById('label-img').innerText = "Foto Principal de la Camiseta";
+            document.getElementById('label-img').innerText = "Fotos de la Camiseta (Selecciona varias)";
             document.getElementById('admin-modal').style.display = 'flex';
         }
 
@@ -434,7 +452,7 @@
             document.getElementById('price-input').value = p.precio;
             
             document.getElementById('img-input').required = false;
-            document.getElementById('label-img').innerText = "Nueva Foto Principal (Opcional)";
+            document.getElementById('label-img').innerText = "Nuevas Fotos (Opcional, si deseas cambiarlas)";
             
             document.getElementById('admin-modal').style.display = 'flex';
         }
@@ -454,45 +472,55 @@
             const precio = document.getElementById('price-input').value;
 
             if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const img = new Image();
-                    img.onload = function() {
-                        const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 400;  
-                        const MAX_HEIGHT = 400;
-                        let width = img.width;
-                        let height = img.height;
+                let archivos = Array.from(fileInput.files);
+                let imagenesProcesadas = [];
+                let procesadosCount = 0;
 
-                        if (width > height) {
-                            if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-                        } else {
-                            if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
-                        }
+                archivos.forEach((file) => {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const img = new Image();
+                        img.onload = function() {
+                            const canvas = document.createElement('canvas');
+                            const MAX_WIDTH = 400;  
+                            const MAX_HEIGHT = 400;
+                            let width = img.width;
+                            let height = img.height;
 
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
+                            if (width > height) {
+                                if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                            } else {
+                                if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+                            }
 
-                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.6);
-                        procesarGuardadoFinal(editId, categoria, titulo, detalles, precio, compressedDataUrl);
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+
+                            const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.6);
+                            imagenesProcesadas.push(compressedDataUrl);
+                            procesadosCount++;
+
+                            if (procesadosCount === archivos.length) {
+                                procesarGuardadoFinal(editId, categoria, titulo, detalles, precio, imagenesProcesadas);
+                            }
+                        };
+                        img.src = event.target.result;
                     };
-                    img.src = event.target.result;
-                };
-                reader.readAsDataURL(file);
+                    reader.readAsDataURL(file);
+                });
             } else {
                 if (editId) {
                     const pExistente = productos.find(item => item.id == editId);
-                    procesarGuardadoFinal(editId, categoria, titulo, detalles, precio, pExistente.img);
+                    procesarGuardadoFinal(editId, categoria, titulo, detalles, precio, pExistente.imagenes);
                 } else {
-                    alert("Por favor selecciona una imagen.");
+                    alert("Por favor selecciona al menos una imagen.");
                 }
             }
         }
 
-        function procesarGuardadoFinal(editId, categoria, titulo, detalles, precio, img) {
+        function procesarGuardadoFinal(editId, categoria, titulo, detalles, precio, imagenes) {
             let copiaProds = [...productos];
 
             if (editId) {
@@ -504,7 +532,8 @@
                         titulo: titulo,
                         detalles: detalles,
                         precio: precio,
-                        img: img
+                        imagenes: imagenes.length > 0 ? imagenes : copiaProds[index].imagenes,
+                        img: imagenes.length > 0 ? imagenes[0] : copiaProds[index].img
                     };
                 }
             } else {
@@ -514,20 +543,15 @@
                     titulo: titulo,
                     detalles: detalles,
                     precio: precio,
-                    img: img,
+                    imagenes: imagenes,
+                    img: imagenes[0],
                     agotado: false
                 };
                 copiaProds.unshift(nuevoP);
             }
 
-            // Mensaje visual de carga mientras GitHub procesa
-            document.getElementById('btn-submit-text').innerText = "Guardando en GitHub...";
-            
-            guardarEnGitHub(copiaProds, () => {
-                document.getElementById('product-form').reset();
-                cerrarModal();
-                alert(editId ? "¡Prenda actualizada y sincronizada en GitHub!" : "¡Prenda agregada y sincronizada en GitHub!");
-            });
+            cerrarModal();
+            sincronizarCambios(copiaProds);
         }
 
         function toggleAgotado(id) {
@@ -537,13 +561,13 @@
                 }
                 return item;
             });
-            guardarEnGitHub(copiaProds);
+            sincronizarCambios(copiaProds);
         }
 
         function eliminarProducto(id) {
-            if(confirm("¿Seguro que deseas eliminar esta prenda? Se actualizará para todos los teléfonos.")) {
+            if(confirm("¿Seguro que deseas eliminar esta prenda?")) {
                 let copiaProds = productos.filter(item => item.id !== id);
-                guardarEnGitHub(copiaProds);
+                sincronizarCambios(copiaProds);
             }
         }
     </script>
