@@ -9,12 +9,17 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: var(--bg); color: var(--text); padding-bottom: 80px; }
         
+        /* Barra de Anuncios Dinámica (Slider de mensajes) */
+        .announcement-bar { background: #047857; color: white; text-align: center; padding: 10px; font-size: 0.9rem; font-weight: 600; overflow: hidden; height: 40px; display: flex; align-items: center; justify-content: center; position: relative; }
+        .announcement-slide { position: absolute; width: 100%; opacity: 0; transition: opacity 0.5s ease-in-out; }
+        .announcement-slide.active { opacity: 1; }
+
         /* Encabezado con Logo y Título */
-        header { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; text-align: center; padding: 30px 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .header-content { display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; }
-        .logo-tienda { width: 75px; height: 75px; border-radius: 50%; object-fit: cover; border: 3px solid #34d399; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        .header-text h1 { font-size: 2.2rem; color: #34d399; font-weight: 800; letter-spacing: 1px; margin-bottom: 4px; text-transform: uppercase; text-align: left; }
-        .header-text p { color: #94a3b8; font-size: 1.1rem; font-weight: 500; text-align: left; }
+        header { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; text-align: center; padding: 25px 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .header-content { display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; max-width: 1200px; margin: 0 auto; }
+        .logo-tienda { max-width: 220px; height: auto; max-height: 85px; object-fit: contain; border-radius: 8px; background: transparent; }
+        .header-text h1 { font-size: 2rem; color: #34d399; font-weight: 800; letter-spacing: 1px; margin-bottom: 4px; text-transform: uppercase; text-align: left; }
+        .header-text p { color: #94a3b8; font-size: 1rem; font-weight: 500; text-align: left; }
         @media (max-width: 600px) { .header-text h1, .header-text p { text-align: center; } }
 
         /* Barra de Búsqueda y Filtros Rápidos */
@@ -54,8 +59,15 @@
         .dot.active { background: white; }
 
         .card-body { padding: 20px; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between; }
-        .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; color: #1e293b; line-height: 1.3; }
-        .price { font-size: 1.2rem; font-weight: 800; color: var(--primary); margin-bottom: 15px; }
+        .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; color: #1e293b; line-height: 1.3; }
+        .price { font-size: 1.2rem; font-weight: 800; color: var(--primary); margin-bottom: 12px; }
+
+        /* Selector de Tallas Rápido */
+        .size-selector { margin-bottom: 12px; }
+        .size-selector label { font-size: 0.8rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px; text-transform: uppercase; }
+        .sizes-flex { display: flex; gap: 5px; }
+        .size-btn { flex: 1; padding: 6px 2px; font-size: 0.8rem; font-weight: 700; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; cursor: pointer; text-align: center; color: #334155; transition: all 0.2s; }
+        .size-btn.selected { background: var(--primary); color: white; border-color: var(--primary); }
         
         .btn-ws { background-color: #25D366; color: #ffffff; text-decoration: none; padding: 12px; border-radius: 8px; font-weight: 700; text-align: center; display: block; font-size: 0.95rem; transition: background 0.2s; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.2); }
         .card.agotado .btn-ws { background-color: #94a3b8; pointer-events: none; box-shadow: none; }
@@ -69,9 +81,15 @@
         .btn-edit { background: #2563eb; }
         .btn-delete { background: #dc2626; }
 
-        /* Botón flotante para abrir panel o cerrar sesión admin */
+        /* Footer de Garantía y Métodos de Pago */
+        .store-info-footer { max-width: 1200px; margin: 40px auto 20px auto; padding: 20px; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; flex-wrap: wrap; justify-content: space-around; text-align: center; gap: 20px; }
+        .info-box { flex: 1; min-width: 250px; }
+        .info-box h4 { color: #0f172a; font-size: 1rem; margin-bottom: 8px; font-weight: 700; }
+        .info-box p { color: #64748b; font-size: 0.9rem; line-height: 1.4; }
+
+        /* Botón flotante para panel admin */
         #fab-admin { position: fixed; bottom: 20px; right: 20px; background: #0f172a; color: white; border: none; border-radius: 50px; width: 50px; height: 50px; font-size: 20px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1000; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
-        body.admin-mode #fab-admin { background: #059669; } /* Se pone verdecito si eres admin para indicar modo activo */
+        body.admin-mode #fab-admin { background: #059669; }
         
         #admin-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center; padding: 20px; }
         .modal-content { background: white; padding: 25px; border-radius: 12px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
@@ -84,13 +102,24 @@
         .btn-primary { background: #059669; color: white; }
         .btn-secondary { background: #64748b; color: white; }
         .empty-msg { text-align: center; grid-column: 1 / -1; color: #64748b; padding: 40px; font-size: 1.1rem; }
+        
+        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 3000; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; font-weight: bold; color: #059669; }
     </style>
 </head>
 <body>
 
+    <div id="loading-overlay">Cargando catálogo desde la nube...</div>
+
+    <!-- Barra de anuncios rotativos -->
+    <div class="announcement-bar">
+        <div class="announcement-slide active">🚀 ¡Envíos seguros a todo el país por MRW!</div>
+        <div class="announcement-slide">💳 Métodos de pago: Pago Móvil, Binance y Efectivo</div>
+        <div class="announcement-slide">⚽ Las mejores camisetas de fútbol al mejor estilo</div>
+    </div>
+
     <header>
         <div class="header-content">
-            <img src="https://i.imgur.com/7.png" alt="Logo Gol & Estilo Sport" class="logo-tienda" id="logo-img" onerror="this.src='https://via.placeholder.com/75?text=GES'">
+            <img src="https://i.imgur.com/7.png" alt="Logo Gol & Estilo Sport" class="logo-tienda" id="logo-img" onerror="this.src='https://via.placeholder.com/220x75?text=Gol+%26+Estilo'">
             <div class="header-text">
                 <h1>Gol & Estilo Sport</h1>
                 <p>Catálogo Oficial de Camisetas de Fútbol</p>
@@ -110,6 +139,18 @@
 
     <div class="container" id="catalogo-container">
         <!-- Contenido dinámico -->
+    </div>
+
+    <!-- Sello de garantía, métodos de pago y envíos -->
+    <div class="store-info-footer">
+        <div class="info-box">
+            <h4>💳 Métodos de Pago</h4>
+            <p>Aceptamos Pago Móvil, Binance (USDT) y Efectivo.</p>
+        </div>
+        <div class="info-box">
+            <h4>📦 Envíos Seguros</h4>
+            <p>Envíos garantizados a nivel nacional exclusivamente a través de <b>MRW</b>.</p>
+        </div>
     </div>
 
     <button id="fab-admin" onclick="accionBotonAdmin()" title="Panel Administrador">⚙️</button>
@@ -146,75 +187,102 @@
 
     <script>
         const PASSWORD_ADMIN = "12345"; 
-        let db;
+        const JSONBIN_API_KEY = "$2a$10$nUnNydsF98D3sFg/SlYxWOZ9MTqXMZN0Mj3beohqvkAah5E3uuvEG";
+        
+        let binId = localStorage.getItem('gol_estilo_bin_id') || ""; 
         let productos = [];
         let categoriaSeleccionada = 'TODOS';
 
-        // Inicializar IndexedDB
-        const request = indexedDB.open('GolEstiloDB', 1);
-
-        request.onerror = function(event) {
-            console.error("Error al abrir la base de datos", event);
-        };
-
-        request.onsuccess = function(event) {
-            db = event.target.result;
-            migrarLocalStorage();
-        };
-
-        request.onupgradeneeded = function(event) {
-            db = event.target.result;
-            if (!db.objectStoreNames.contains('productos')) {
-                db.createObjectStore('productos', { keyPath: 'id' });
+        // Animación de mensajes rotativos en la barra superior
+        let currentSlide = 0;
+        setInterval(() => {
+            const slides = document.querySelectorAll('.announcement-slide');
+            if(slides.length > 0) {
+                slides[currentSlide].classList.remove('active');
+                currentSlide = (currentSlide + 1) % slides.length;
+                slides[currentSlide].classList.add('active');
             }
+        }, 3500);
+
+        window.onload = function() {
+            cargarProductosNube();
         };
 
-        function migrarLocalStorage() {
-            let viejos = JSON.parse(localStorage.getItem('gol_estilo_productos_v4')) || JSON.parse(localStorage.getItem('gol_estilo_productos_v3')) || [];
-            if (viejos.length > 0) {
-                const transaction = db.transaction(['productos'], 'readwrite');
-                const store = transaction.objectStore('productos');
-                viejos.forEach(p => store.put(p));
-                transaction.oncomplete = function() {
-                    localStorage.removeItem('gol_estilo_productos_v4');
-                    localStorage.removeItem('gol_estilo_productos_v3');
-                    cargarProductosDeDB();
-                };
-            } else {
-                cargarProductosDeDB();
-            }
-        }
-
-        function cargarProductosDeDB() {
-            if (!db) return;
-            const transaction = db.transaction(['productos'], 'readonly');
-            const store = transaction.objectStore('productos');
-            const requestAll = store.getAll();
-
-            requestAll.onsuccess = function() {
-                productos = requestAll.result || [];
+        function cargarProductosNube() {
+            if (!binId) {
+                productos = [];
                 renderCatalogo();
+                document.getElementById('loading-overlay').style.display = 'none';
+                return;
+            }
+
+            fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+                headers: { 'X-Master-Key': JSONBIN_API_KEY }
+            })
+            .then(res => res.json())
+            .then(data => {
+                productos = data.record || [];
+                renderCatalogo();
+                document.getElementById('loading-overlay').style.display = 'none';
                 chequearModoAdminGuardado();
-            };
+            })
+            .catch(err => {
+                console.error("Error al cargar de la nube:", err);
+                document.getElementById('loading-overlay').style.display = 'none';
+                renderCatalogo();
+            });
         }
 
-        function guardarEnDB(nuevoP, callback) {
-            const transaction = db.transaction(['productos'], 'readwrite');
-            const store = transaction.objectStore('productos');
-            store.put(nuevoP);
-            transaction.oncomplete = function() {
-                cargarProductosDeDB();
-                if (callback) callback();
-            };
-        }
+        function guardarEnNube(nuevosProductos, callback) {
+            document.getElementById('loading-overlay').style.display = 'flex';
+            document.getElementById('loading-overlay').innerText = "Guardando cambios en la nube...";
 
-        function eliminarDeDB(id) {
-            const transaction = db.transaction(['productos'], 'readwrite');
-            const store = transaction.objectStore('productos');
-            store.delete(id);
-            transaction.oncomplete = function() {
-                cargarProductosDeDB();
-            };
+            if (!binId) {
+                fetch('https://api.jsonbin.io/v3/b', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': JSONBIN_API_KEY,
+                        'X-Bin-Name': 'GolEstiloCatalogo'
+                    },
+                    body: JSON.stringify(nuevosProductos)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    binId = data.metadata.id;
+                    localStorage.setItem('gol_estilo_bin_id', binId);
+                    productos = nuevosProductos;
+                    renderCatalogo();
+                    document.getElementById('loading-overlay').style.display = 'none';
+                    if (callback) callback();
+                })
+                .catch(err => {
+                    alert("Error al conectar con la nube.");
+                    console.error(err);
+                    document.getElementById('loading-overlay').style.display = 'none';
+                });
+            } else {
+                fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': JSONBIN_API_KEY
+                    },
+                    body: JSON.stringify(nuevosProductos)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    productos = nuevosProductos;
+                    renderCatalogo();
+                    document.getElementById('loading-overlay').style.display = 'none';
+                    if (callback) callback();
+                })
+                .catch(err => {
+                    alert("Error al actualizar la nube.");
+                    console.error(err);
+                    document.getElementById('loading-overlay').style.display = 'none';
+                });
+            }
         }
 
         function renderCatalogo() {
@@ -254,7 +322,6 @@
                 prodsCat.forEach(p => {
                     const card = document.createElement('div');
                     card.className = `card ${p.agotado ? 'agotado' : ''}`;
-                    const mensajeWsp = encodeURIComponent(`Hola, me interesa la camisa ${p.titulo}`);
 
                     let imgsHtml = '';
                     let dotsHtml = '';
@@ -283,8 +350,18 @@
                             <div>
                                 <h2 class="card-title">${p.titulo}</h2>
                                 <div class="price">${p.precio}</div>
+                                <div class="size-selector">
+                                    <label>Selecciona tu Talla:</label>
+                                    <div class="sizes-flex" id="sizes-${p.id}">
+                                        <button class="size-btn selected" onclick="seleccionarTalla(this, '${p.id}', 'S')">S</button>
+                                        <button class="size-btn" onclick="seleccionarTalla(this, '${p.id}', 'M')">M</button>
+                                        <button class="size-btn" onclick="seleccionarTalla(this, '${p.id}', 'L')">L</button>
+                                        <button class="size-btn" onclick="seleccionarTalla(this, '${p.id}', 'XL')">XL</button>
+                                        <button class="size-btn" onclick="seleccionarTalla(this, '${p.id}', 'XXL')">XXL</button>
+                                    </div>
+                                </div>
                             </div>
-                            <a href="https://wa.me/584128539283?text=${mensajeWsp}" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
+                            <a href="#" onclick="enviarWhatsApp(event, '${p.titulo}', '${p.id}')" class="btn-ws">Pedir por WhatsApp</a>
                             <div class="admin-controls">
                                 <div class="admin-row">
                                     <button class="btn-admin btn-toggle" onclick="toggleAgotado(${p.id})">${p.agotado ? 'Disponible' : 'Agotar'}</button>
@@ -299,6 +376,20 @@
                     container.appendChild(card);
                 });
             });
+        }
+
+        function seleccionarTalla(btn, prodId, talla) {
+            const contenedor = document.getElementById(`sizes-${prodId}`);
+            contenedor.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+        }
+
+        function enviarWhatsApp(e, titulo, prodId) {
+            e.preventDefault();
+            const contenedor = document.getElementById(`sizes-${prodId}`);
+            const tallaSeleccionada = contenedor.querySelector('.size-btn.selected').innerText;
+            const mensajeWsp = encodeURIComponent(`Hola, me interesa la camisa ${titulo} en talla ${tallaSeleccionada}.`);
+            window.open(`https://wa.me/584128539283?text=${mensajeWsp}`, '_blank');
         }
 
         function actualizarFiltros(categorias) {
@@ -341,7 +432,6 @@
             });
         }
 
-        // --- SISTEMA DE ADMINISTRADOR INTELIGENTE ---
         function chequearModoAdminGuardado() {
             let esAdmin = sessionStorage.getItem('gol_admin_activo') === 'true';
             if (esAdmin) {
@@ -365,7 +455,6 @@
                     alert("Contraseña incorrecta");
                 }
             } else {
-                // Si ya es admin, el botón flotante abre directo el modal para agregar nueva prenda
                 abrirModalNuevo();
             }
         }
@@ -392,7 +481,6 @@
             document.getElementById('title-input').value = p.titulo;
             document.getElementById('price-input').value = p.precio;
             
-            // Al editar, la foto no es obligatoria (si no subes nuevas, se quedan las que ya tenía)
             document.getElementById('img-input').required = false;
             document.getElementById('label-img').innerText = "Nuevas Imágenes (Opcional - Si dejas vacío se quedan las actuales)";
             document.getElementById('info-img').style.display = "none";
@@ -413,7 +501,6 @@
             const titulo = document.getElementById('title-input').value;
             const precio = document.getElementById('price-input').value;
 
-            // Si se están agregando imágenes nuevas
             if (fileInput.files.length > 0) {
                 const files = Array.from(fileInput.files);
                 let processedImages = [];
@@ -446,7 +533,7 @@
                             filesProcessed++;
 
                             if (filesProcessed === files.length) {
-                                guardarDatosFinales(editId, categoria, titulo, precio, processedImages);
+                                procesarGuardadoFinal(editId, categoria, titulo, precio, processedImages);
                             }
                         };
                         img.src = event.target.result;
@@ -454,29 +541,31 @@
                     reader.readAsDataURL(file);
                 });
             } else {
-                // Si es edición y no seleccionó fotos nuevas, mantenemos las que tenía
                 if (editId) {
                     const pExistente = productos.find(item => item.id == editId);
-                    guardarDatosFinales(editId, categoria, titulo, precio, pExistente.imgs);
+                    procesarGuardadoFinal(editId, categoria, titulo, precio, pExistente.imgs);
                 } else {
                     alert("Por favor selecciona al menos una imagen para la nueva prenda.");
                 }
             }
         }
 
-        function guardarDatosFinales(editId, categoria, titulo, precio, imgs) {
-            let nuevoP;
+        function procesarGuardadoFinal(editId, categoria, titulo, precio, imgs) {
+            let copiaProds = [...productos];
+
             if (editId) {
-                const pExistente = productos.find(item => item.id == editId);
-                nuevoP = {
-                    ...pExistente,
-                    categoria: categoria,
-                    titulo: titulo,
-                    precio: precio,
-                    imgs: imgs
-                };
+                let index = copiaProds.findIndex(item => item.id == editId);
+                if (index !== -1) {
+                    copiaProds[index] = {
+                        ...copiaProds[index],
+                        categoria: categoria,
+                        titulo: titulo,
+                        precio: precio,
+                        imgs: imgs
+                    };
+                }
             } else {
-                nuevoP = {
+                let nuevoP = {
                     id: Date.now(),
                     categoria: categoria,
                     titulo: titulo,
@@ -484,9 +573,10 @@
                     imgs: imgs,
                     agotado: false
                 };
+                copiaProds.unshift(nuevoP);
             }
 
-            guardarEnDB(nuevoP, () => {
+            guardarEnNube(copiaProds, () => {
                 document.getElementById('product-form').reset();
                 cerrarModal();
                 alert(editId ? "¡Prenda actualizada con éxito!" : "¡Prenda agregada con éxito!");
@@ -494,16 +584,19 @@
         }
 
         function toggleAgotado(id) {
-            let p = productos.find(item => item.id === id);
-            if (p) {
-                p.agotado = !p.agotado;
-                guardarEnDB(p);
-            }
+            let copiaProds = productos.map(item => {
+                if (item.id === id) {
+                    return { ...item, agotado: !item.agotado };
+                }
+                return item;
+            });
+            guardarEnNube(copiaProds);
         }
 
         function eliminarProducto(id) {
             if(confirm("¿Seguro que deseas eliminar esta prenda?")) {
-                eliminarDeDB(id);
+                let copiaProds = productos.filter(item => item.id !== id);
+                guardarEnNube(copiaProds);
             }
         }
     </script>
