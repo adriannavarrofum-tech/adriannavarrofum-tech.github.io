@@ -123,7 +123,7 @@
     </div>
 
     <div class="container" id="catalogo-container">
-        <div class="empty-msg">Cargando catálogo...</div>
+        <div class="empty-msg">Cargando catálogo desde la nube...</div>
     </div>
 
     <div class="store-info-footer">
@@ -157,9 +157,9 @@
                     <input type="text" id="price-input" required value="$20.00 / 23 a BCV">
                 </div>
                 <div class="form-group">
-                    <label id="label-img">Seleccionar Múltiples Imágenes (Diseño, Parches, Espalda)</label>
+                    <label id="label-img">Seleccionar Imagen (Máximo 1 o 2 recomendadas)</label>
                     <input type="file" id="img-input" accept="image/*" multiple>
-                    <small style="color: #64748b; display: block; margin-top: 4px;" id="info-img">* Puedes subir varias fotos a la vez.</small>
+                    <small style="color: #e11d48; display: block; margin-top: 4px;" id="info-img">⚠️ Sube máximo 1 o 2 fotos por prenda para evitar que la nube rechace el cambio por peso.</small>
                 </div>
                 <div class="modal-buttons">
                     <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
@@ -245,48 +245,36 @@
         }
 
         function guardarEnNube(nuevosProductos, callback) {
-            if (!binId) {
-                fetch('https://api.jsonbin.io/v3/b', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': JSONBIN_API_KEY,
-                        'X-Bin-Name': 'GolEstiloCatalogo'
-                    },
-                    body: JSON.stringify(nuevosProductos)
-                })
-                .then(res => res.json())
-                .then(data => {
+            const opcionesFetch = {
+                method: binId ? 'PUT' : 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': JSONBIN_API_KEY,
+                    ...(binId ? {} : { 'X-Bin-Name': 'GolEstiloCatalogo' })
+                },
+                body: JSON.stringify(nuevosProductos)
+            };
+
+            const url = binId ? `https://api.jsonbin.io/v3/b/${binId}` : 'https://api.jsonbin.io/v3/b';
+
+            fetch(url, opcionesFetch)
+            .then(res => {
+                if (!res.ok) throw new Error("Error en la respuesta del servidor");
+                return res.json();
+            })
+            .then(data => {
+                if (!binId) {
                     binId = data.metadata.id;
                     localStorage.setItem('gol_estilo_bin_id', binId);
-                    productos = nuevosProductos;
-                    renderCatalogo();
-                    if (callback) callback();
-                })
-                .catch(err => {
-                    alert("Error al guardar en la nube.");
-                    console.error(err);
-                });
-            } else {
-                fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': JSONBIN_API_KEY
-                    },
-                    body: JSON.stringify(nuevosProductos)
-                })
-                .then(res => res.json())
-                .then(data => {
-                    productos = nuevosProductos;
-                    renderCatalogo();
-                    if (callback) callback();
-                })
-                .catch(err => {
-                    alert("Error al actualizar la nube.");
-                    console.error(err);
-                });
-            }
+                }
+                productos = nuevosProductos;
+                renderCatalogo();
+                if (callback) callback();
+            })
+            .catch(err => {
+                console.error("Error detallado:", err);
+                alert("⚠️ Error al guardar: Las imágenes juntas superan el límite de peso que permite la nube gratuita. Intenta subir solo 1 foto por prenda o borra alguna prenda vieja.");
+            });
         }
 
         function renderCatalogo() {
@@ -295,7 +283,7 @@
             container.innerHTML = '';
 
             if (productos.length === 0) {
-                container.innerHTML = `<div class="empty-msg">El catálogo está vacío. Toca la tuerca (⚙️) abajo a la derecha, ingresa la contraseña <b>12345</b> y comienza a agregar tus camisetas.</div>`;
+                container.innerHTML = `<div class="empty-msg">El catálogo está vacío. Toca la tuerca (⚙️) abajo a la derecha, ingresa la contraseña <b>12345</b> y agrega tu primera prenda.</div>`;
                 actualizarFiltros([]);
                 return;
             }
@@ -469,7 +457,7 @@
             document.getElementById('product-form').reset();
             document.getElementById('edit-id').value = "";
             document.getElementById('img-input').required = true;
-            document.getElementById('label-img').innerText = "Seleccionar Múltiples Imágenes";
+            document.getElementById('label-img').innerText = "Seleccionar Imagen (Máximo 2)";
             document.getElementById('info-img').style.display = "block";
             document.getElementById('admin-modal').style.display = 'flex';
         }
@@ -506,7 +494,14 @@
             const precio = document.getElementById('price-input').value;
 
             if (fileInput.files.length > 0) {
-                const files = Array.from(fileInput.files);
+                let files = Array.from(fileInput.files);
+                
+                // Forzamos un límite estricto de máximo 2 fotos por seguridad de la base de datos
+                if (files.length > 2) {
+                    alert("⚠️ Por límite de peso en la nube, solo se tomarán las primeras 2 imágenes.");
+                    files = files.slice(0, 2);
+                }
+
                 let processedImages = [];
                 let filesProcessed = 0;
 
@@ -516,8 +511,8 @@
                         const img = new Image();
                         img.onload = function() {
                             const canvas = document.createElement('canvas');
-                            const MAX_WIDTH = 900;
-                            const MAX_HEIGHT = 900;
+                            const MAX_WIDTH = 500;  
+                            const MAX_HEIGHT = 500;
                             let width = img.width;
                             let height = img.height;
 
@@ -532,7 +527,8 @@
                             const ctx = canvas.getContext('2d');
                             ctx.drawImage(img, 0, 0, width, height);
 
-                            const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                            // Comprimimos al 50% para garantizar que pase sin errores a la nube
+                            const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.5);
                             processedImages[index] = compressedDataUrl;
                             filesProcessed++;
 
@@ -549,7 +545,7 @@
                     const pExistente = productos.find(item => item.id == editId);
                     procesarGuardadoFinal(editId, categoria, titulo, precio, pExistente.imgs);
                 } else {
-                    alert("Por favor selecciona al menos una imagen para la nueva prenda.");
+                    alert("Por favor selecciona al menos una imagen.");
                 }
             }
         }
@@ -606,5 +602,3 @@
     </script>
 </body>
 </html>
-
-                
