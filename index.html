@@ -15,7 +15,7 @@
 
         header { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; text-align: center; padding: 25px 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .header-content { display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; max-width: 1200px; margin: 0 auto; }
-        .logo-tienda { max-width: 220px; height: auto; max-height: 85px; object-fit: contain; border-radius: 8px; background: transparent; }
+        .logo-tienda { max-width: 220px; height: auto; max-height: 85px; object-fit: contain; border-radius: 8px; }
         .header-text h1 { font-size: 2rem; color: #34d399; font-weight: 800; letter-spacing: 1px; margin-bottom: 4px; text-transform: uppercase; text-align: left; }
         .header-text p { color: #94a3b8; font-size: 1rem; font-weight: 500; text-align: left; }
         @media (max-width: 600px) { .header-text h1, .header-text p { text-align: center; } }
@@ -42,18 +42,11 @@
         .card.agotado .badge-agotado { display: block; }
 
         .card-img-container { width: 100%; height: 280px; background-color: #f8fafc; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
-        .carrusel-track { display: flex; width: 100%; height: 100%; transition: transform 0.3s ease-in-out; }
-        .card-img { min-width: 100%; height: 100%; object-fit: cover; flex-shrink: 0; }
-        
-        .carrusel-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; cursor: pointer; padding: 8px 12px; font-size: 1rem; border-radius: 50%; z-index: 5; }
-        .carrusel-btn.prev { left: 10px; }
-        .carrusel-btn.next { right: 10px; }
-        .carrusel-dots { position: absolute; bottom: 10px; width: 100%; display: flex; justify-content: center; gap: 5px; z-index: 5; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.5); display: inline-block; }
-        .dot.active { background: white; }
+        .card-img { width: 100%; height: 100%; object-fit: cover; }
 
         .card-body { padding: 20px; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between; }
-        .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; color: #1e293b; line-height: 1.3; }
+        .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; color: #1e293b; line-height: 1.3; }
+        .card-details { font-size: 0.85rem; color: #64748b; margin-bottom: 10px; line-height: 1.4; background: #f8fafc; padding: 8px; border-radius: 6px; border-left: 3px solid var(--primary); }
         .price { font-size: 1.2rem; font-weight: 800; color: var(--primary); margin-bottom: 12px; }
 
         .size-selector { margin-bottom: 12px; }
@@ -86,7 +79,8 @@
         .modal-content h3 { margin-bottom: 15px; color: #0f172a; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 0.9rem; }
-        .form-group input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1rem; }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1rem; }
+        .form-group textarea { resize: vertical; height: 70px; }
         .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
         .btn { padding: 10px 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
         .btn-primary { background: #059669; color: white; }
@@ -153,13 +147,17 @@
                     <input type="text" id="title-input" required placeholder="PSG local con parches">
                 </div>
                 <div class="form-group">
+                    <label>Detalles / Descripción (Ej: Incluye parches, tela Dri-FIT)</label>
+                    <textarea id="details-input" placeholder="Ej: Escudo bordado, tela de alta calidad, parches oficiales..."></textarea>
+                </div>
+                <div class="form-group">
                     <label>Precio</label>
                     <input type="text" id="price-input" required value="$20.00 / 23 a BCV">
                 </div>
                 <div class="form-group">
-                    <label id="label-img">Seleccionar Imagen (Máximo 1 o 2 recomendadas)</label>
-                    <input type="file" id="img-input" accept="image/*" multiple>
-                    <small style="color: #e11d48; display: block; margin-top: 4px;" id="info-img">⚠️ Sube máximo 1 o 2 fotos por prenda para evitar que la nube rechace el cambio por peso.</small>
+                    <label id="label-img">Foto Principal de la Camiseta</label>
+                    <input type="file" id="img-input" accept="image/*">
+                    <small style="color: #64748b; display: block; margin-top: 4px;">Se comprime automáticamente para guardarse sin errores en la nube.</small>
                 </div>
                 <div class="modal-buttons">
                     <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
@@ -273,7 +271,7 @@
             })
             .catch(err => {
                 console.error("Error detallado:", err);
-                alert("⚠️ Error al guardar: Las imágenes juntas superan el límite de peso que permite la nube gratuita. Intenta subir solo 1 foto por prenda o borra alguna prenda vieja.");
+                alert("⚠️ Error al guardar: La base de datos está llena. Borra alguna prenda vieja para poder agregar nuevas.");
             });
         }
 
@@ -289,7 +287,7 @@
             }
 
             let prodsFiltrados = productos.filter(p => {
-                const coincideTexto = p.titulo.toLowerCase().includes(searchText) || p.categoria.toLowerCase().includes(searchText);
+                const coincideTexto = p.titulo.toLowerCase().includes(searchText) || p.categoria.toLowerCase().includes(searchText) || (p.detalles && p.detalles.toLowerCase().includes(searchText));
                 const coincideCat = (categoriaSeleccionada === 'TODOS' || p.categoria === categoriaSeleccionada);
                 return coincideTexto && coincideCat;
             });
@@ -315,32 +313,17 @@
                     const card = document.createElement('div');
                     card.className = `card ${p.agotado ? 'agotado' : ''}`;
 
-                    let imgsHtml = '';
-                    let dotsHtml = '';
-                    let botonesCarrusel = '';
-
-                    p.imgs.forEach((imgUrl, index) => {
-                        imgsHtml += `<img src="${imgUrl}" class="card-img" alt="${p.titulo} - ${index + 1}">`;
-                        dotsHtml += `<span class="dot ${index === 0 ? 'active' : ''}" data-index="${index}"></span>`;
-                    });
-
-                    if (p.imgs.length > 1) {
-                        botonesCarrusel = `
-                            <button class="carrusel-btn prev" onclick="cambiarSlide(this, -1)">&#10094;</button>
-                            <button class="carrusel-btn next" onclick="cambiarSlide(this, 1)">&#10095;</button>
-                            <div class="carrusel-dots">${dotsHtml}</div>
-                        `;
-                    }
+                    let detallesHtml = p.detalles ? `<div class="card-details">📌 ${p.detalles}</div>` : '';
 
                     card.innerHTML = `
                         <div class="badge-agotado">AGOTADO</div>
-                        <div class="card-img-container" data-current="0">
-                            <div class="carrusel-track" style="transform: translateX(0%);">${imgsHtml}</div>
-                            ${botonesCarrusel}
+                        <div class="card-img-container">
+                            <img src="${p.img}" class="card-img" alt="${p.titulo}">
                         </div>
                         <div class="card-body">
                             <div>
                                 <h2 class="card-title">${p.titulo}</h2>
+                                ${detallesHtml}
                                 <div class="price">${p.precio}</div>
                                 <div class="size-selector">
                                     <label>Selecciona tu Talla:</label>
@@ -357,7 +340,7 @@
                             <div class="admin-controls">
                                 <div class="admin-row">
                                     <button class="btn-admin btn-toggle" onclick="toggleAgotado(${p.id})">${p.agotado ? 'Disponible' : 'Agotar'}</button>
-                                    <button class="btn-admin btn-edit" onclick="abrirEditarProducto(${p.id})">Editar / Precio</button>
+                                    <button class="btn-admin btn-edit" onclick="abrirEditarProducto(${p.id})">Editar</button>
                                 </div>
                                 <div class="admin-row">
                                     <button class="btn-admin btn-delete" onclick="eliminarProducto(${p.id})">Eliminar Prenda</button>
@@ -405,25 +388,6 @@
             renderCatalogo();
         }
 
-        function cambiarSlide(btn, direccion) {
-            const container = btn.closest('.card-img-container');
-            const track = container.querySelector('.carrusel-track');
-            const totalImages = track.children.length;
-            let currentIndex = parseInt(container.getAttribute('data-current'));
-
-            currentIndex += direccion;
-            if (currentIndex < 0) currentIndex = totalImages - 1;
-            if (currentIndex >= totalImages) currentIndex = 0;
-
-            container.setAttribute('data-current', currentIndex);
-            track.style.transform = `translateX(-${currentIndex * 100}%)`;
-
-            const dots = container.querySelectorAll('.dot');
-            dots.forEach((dot, idx) => {
-                dot.classList.toggle('active', idx === currentIndex);
-            });
-        }
-
         function chequearModoAdminGuardado() {
             let esAdmin = sessionStorage.getItem('gol_admin_activo') === 'true';
             if (esAdmin) {
@@ -457,8 +421,7 @@
             document.getElementById('product-form').reset();
             document.getElementById('edit-id').value = "";
             document.getElementById('img-input').required = true;
-            document.getElementById('label-img').innerText = "Seleccionar Imagen (Máximo 2)";
-            document.getElementById('info-img').style.display = "block";
+            document.getElementById('label-img').innerText = "Foto Principal de la Camiseta";
             document.getElementById('admin-modal').style.display = 'flex';
         }
 
@@ -466,16 +429,16 @@
             const p = productos.find(item => item.id === id);
             if (!p) return;
 
-            document.getElementById('modal-title').innerText = "Editar Prenda / Modificar Precio";
+            document.getElementById('modal-title').innerText = "Editar Prenda";
             document.getElementById('btn-submit-text').innerText = "Guardar Cambios";
             document.getElementById('edit-id').value = p.id;
             document.getElementById('cat-input').value = p.categoria;
             document.getElementById('title-input').value = p.titulo;
+            document.getElementById('details-input').value = p.detalles || "";
             document.getElementById('price-input').value = p.precio;
             
             document.getElementById('img-input').required = false;
-            document.getElementById('label-img').innerText = "Nuevas Imágenes (Opcional)";
-            document.getElementById('info-img').style.display = "none";
+            document.getElementById('label-img').innerText = "Nueva Foto Principal (Opcional)";
             
             document.getElementById('admin-modal').style.display = 'flex';
         }
@@ -491,66 +454,49 @@
             
             const categoria = document.getElementById('cat-input').value;
             const titulo = document.getElementById('title-input').value;
+            const detalles = document.getElementById('details-input').value;
             const precio = document.getElementById('price-input').value;
 
             if (fileInput.files.length > 0) {
-                let files = Array.from(fileInput.files);
-                
-                // Forzamos un límite estricto de máximo 2 fotos por seguridad de la base de datos
-                if (files.length > 2) {
-                    alert("⚠️ Por límite de peso en la nube, solo se tomarán las primeras 2 imágenes.");
-                    files = files.slice(0, 2);
-                }
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 400;  
+                        const MAX_HEIGHT = 400;
+                        let width = img.width;
+                        let height = img.height;
 
-                let processedImages = [];
-                let filesProcessed = 0;
+                        if (width > height) {
+                            if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                        } else {
+                            if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+                        }
 
-                files.forEach((file, index) => {
-                    const reader = new FileReader();
-                    reader.onload = function(event) {
-                        const img = new Image();
-                        img.onload = function() {
-                            const canvas = document.createElement('canvas');
-                            const MAX_WIDTH = 500;  
-                            const MAX_HEIGHT = 500;
-                            let width = img.width;
-                            let height = img.height;
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
 
-                            if (width > height) {
-                                if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-                            } else {
-                                if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
-                            }
-
-                            canvas.width = width;
-                            canvas.height = height;
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0, width, height);
-
-                            // Comprimimos al 50% para garantizar que pase sin errores a la nube
-                            const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.5);
-                            processedImages[index] = compressedDataUrl;
-                            filesProcessed++;
-
-                            if (filesProcessed === files.length) {
-                                procesarGuardadoFinal(editId, categoria, titulo, precio, processedImages);
-                            }
-                        };
-                        img.src = event.target.result;
+                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.5);
+                        procesarGuardadoFinal(editId, categoria, titulo, detalles, precio, compressedDataUrl);
                     };
-                    reader.readAsDataURL(file);
-                });
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
             } else {
                 if (editId) {
                     const pExistente = productos.find(item => item.id == editId);
-                    procesarGuardadoFinal(editId, categoria, titulo, precio, pExistente.imgs);
+                    procesarGuardadoFinal(editId, categoria, titulo, detalles, precio, pExistente.img);
                 } else {
-                    alert("Por favor selecciona al menos una imagen.");
+                    alert("Por favor selecciona una imagen.");
                 }
             }
         }
 
-        function procesarGuardadoFinal(editId, categoria, titulo, precio, imgs) {
+        function procesarGuardadoFinal(editId, categoria, titulo, detalles, precio, img) {
             let copiaProds = [...productos];
 
             if (editId) {
@@ -560,8 +506,9 @@
                         ...copiaProds[index],
                         categoria: categoria,
                         titulo: titulo,
+                        detalles: detalles,
                         precio: precio,
-                        imgs: imgs
+                        img: img
                     };
                 }
             } else {
@@ -569,8 +516,9 @@
                     id: Date.now(),
                     categoria: categoria,
                     titulo: titulo,
+                    detalles: detalles,
                     precio: precio,
-                    imgs: imgs,
+                    img: img,
                     agotado: false
                 };
                 copiaProds.unshift(nuevoP);
