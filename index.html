@@ -55,11 +55,12 @@
         .modal-content h3 { margin-bottom: 15px; color: #0f172a; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 0.9rem; }
-        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1rem; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1rem; }
         .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
         .btn { padding: 10px 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
         .btn-primary { background: #059669; color: white; }
         .btn-secondary { background: #64748b; color: white; }
+        .empty-msg { text-align: center; grid-column: 1 / -1; color: #64748b; padding: 40px; font-size: 1.1rem; }
     </style>
 </head>
 <body>
@@ -70,7 +71,7 @@
     </header>
 
     <div class="container" id="catalogo-container">
-        <!-- Los productos se cargarán dinámicamente aquí -->
+        <!-- Contenido dinámico -->
     </div>
 
     <!-- Botón flotante de Ajustes (Admin) -->
@@ -83,19 +84,19 @@
             <form id="product-form" onsubmit="guardarProducto(event)">
                 <div class="form-group">
                     <label>Categoría (Ej: 🔵🔴 FC Barcelona)</label>
-                    <input type="text" id="cat-input" required placeholder="🔵🔴 FC Barcelona (Temporada Actual)">
+                    <input type="text" id="cat-input" required placeholder="🔵🔴 FC Barcelona">
                 </div>
                 <div class="form-group">
                     <label>Nombre de la Camiseta</label>
-                    <input type="text" id="title-input" required placeholder="FC Barcelona - Local">
+                    <input type="text" id="title-input" required placeholder="FC Barcelona local">
                 </div>
                 <div class="form-group">
-                    <label>Precio y descripción corta</label>
+                    <label>Precio</label>
                     <input type="text" id="price-input" required value="$20.00 / 23 a BCV">
                 </div>
                 <div class="form-group">
                     <label>Enlace de la Imagen (URL)</label>
-                    <input type="url" id="img-input" required placeholder="https://images.unsplash.com/...">
+                    <input type="url" id="img-input" required placeholder="https://...">
                 </div>
                 <div class="modal-buttons">
                     <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
@@ -106,35 +107,28 @@
     </div>
 
     <script>
-        // Contraseña para entrar al modo administrador
         const PASSWORD_ADMIN = "12345"; 
 
-        // Productos iniciales por defecto
-        const productosIniciales = [
-            { id: 1, categoria: "🔵🔴 FC Barcelona (Temporada Actual)", titulo: "FC Barcelona - Local", precio: "$20.00 / 23 a BCV", img: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=500&q=80", agotado: false },
-            { id: 2, categoria: "🔵🔴 FC Barcelona (Temporada Actual)", titulo: "FC Barcelona - Visitante", precio: "$20.00 / 23 a BCV", img: "https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=500&q=80", agotado: false },
-            { id: 3, categoria: "🩵 Manchester City (Temporada Actual)", titulo: "Manchester City - Local (Haaland #9)", precio: "$20.00 / 23 a BCV", img: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?auto=format&fit=crop&w=500&q=80", agotado: false },
-            { id: 4, categoria: "⭐ Camisetas Retro Más Famosas", titulo: "Retro Brasil 2002 (Ronaldo / Ronaldinho)", precio: "$20.00 / 23 a BCV", img: "https://images.unsplash.com/photo-1569074187119-c87815b476da?auto=format&fit=crop&w=500&q=80", agotado: false }
-        ];
-
-        // Cargar productos de localStorage o usar los iniciales
-        let productos = JSON.parse(localStorage.getItem('gol_estilo_productos')) || productosIniciales;
+        // Catálogo inicia vacío para que agregues tus propias prendas limpias
+        let productos = JSON.parse(localStorage.getItem('gol_estilo_productos_v2')) || [];
 
         function renderCatalogo() {
             const container = document.getElementById('catalogo-container');
             container.innerHTML = '';
 
-            // Agrupar por categorías
+            if (productos.length === 0) {
+                container.innerHTML = `<div class="empty-msg">El catálogo está vacío. Toca la tuerca (⚙️) abajo a la derecha, ingresa la contraseña <b>12345</b> y comienza a agregar tus camisetas.</div>`;
+                return;
+            }
+
             const categoriasUnicas = [...new Set(productos.map(p => p.categoria))];
 
             categoriasUnicas.forEach(cat => {
-                // Crear título de sección
                 const sectionDiv = document.createElement('div');
                 sectionDiv.className = 'section-header';
                 sectionDiv.innerText = cat;
                 container.appendChild(sectionDiv);
 
-                // Filtrar productos de esta categoría
                 const prodsCat = productos.filter(p => p.categoria === cat);
 
                 prodsCat.forEach(p => {
@@ -186,12 +180,12 @@
                 categoria: document.getElementById('cat-input').value,
                 titulo: document.getElementById('title-input').value,
                 precio: document.getElementById('price-input').value,
-                img: document.getElementById('img-input').value,
+                img: document.getElementById('img-input').value.trim(),
                 agotado: false
             };
 
             productos.push(nuevoP);
-            localStorage.setItem('gol_estilo_productos', JSON.stringify(productos));
+            localStorage.setItem('gol_estilo_productos_v2', JSON.stringify(productos));
             renderCatalogo();
             document.getElementById('product-form').reset();
             cerrarModal();
@@ -200,19 +194,18 @@
 
         function toggleAgotado(id) {
             productos = productos.map(p => p.id === id ? { ...p, agotado: !p.agotado } : p);
-            localStorage.setItem('gol_estilo_productos', JSON.stringify(productos));
+            localStorage.setItem('gol_estilo_productos_v2', JSON.stringify(productos));
             renderCatalogo();
         }
 
         function eliminarProducto(id) {
             if(confirm("¿Seguro que deseas eliminar esta prenda?")) {
                 productos = productos.filter(p => p.id !== id);
-                localStorage.setItem('gol_estilo_productos', JSON.stringify(productos));
+                localStorage.setItem('gol_estilo_productos_v2', JSON.stringify(productos));
                 renderCatalogo();
             }
         }
 
-        // Inicializar al cargar la página
         renderCatalogo();
     </script>
 </body>
