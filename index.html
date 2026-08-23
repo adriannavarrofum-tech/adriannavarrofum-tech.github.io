@@ -117,7 +117,7 @@
     </div>
 
     <div class="container" id="catalogo-container">
-        <div class="empty-msg">Cargando catálogo...</div>
+        <div class="empty-msg">Sincronizando con GitHub...</div>
     </div>
 
     <div class="store-info-footer">
@@ -157,7 +157,7 @@
                 <div class="form-group">
                     <label id="label-img">Foto Principal de la Camiseta</label>
                     <input type="file" id="img-input" accept="image/*">
-                    <small style="color: #64748b; display: block; margin-top: 4px;">Se reducirá automáticamente de tamaño para guardarse sin errores.</small>
+                    <small style="color: #64748b; display: block; margin-top: 4px;">Se optimizará automáticamente para guardarse en GitHub.</small>
                 </div>
                 <div class="modal-buttons">
                     <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
@@ -169,11 +169,15 @@
 
     <script>
         const PASSWORD_ADMIN = "12345"; 
-        const JSONBIN_API_KEY = "$2a$10$nUnNydsF98D3sFg/SlYxWOZ9MTqXMZN0Mj3beohqvkAah5E3uuvEG";
         
-        // Creamos un código único y nuevo para forzar un espacio limpio en cero
-        let binId = localStorage.getItem('gol_estilo_bin_id_nuevo') || ""; 
+        // CONFIGURACIÓN DE TU REPOSITORIO GITHUB
+        const GH_USER = "adriannavarrofum-tech";
+        const GH_REPO = "adriannavarrofum-tech.github.io";
+        const GH_FILE_PATH = "productos.json";
+        const GH_TOKEN = "Ghp_olDvgB0Euz3YnsPgXa3zOZK3HEtsoP3kJGi0"; // Tu Token configurado
+
         let productos = [];
+        let fileSha = ""; // Necesario para actualizar archivos en GitHub
         let categoriaSeleccionada = 'TODOS';
 
         let currentSlide = 0;
@@ -187,85 +191,83 @@
         }, 3500);
 
         window.onload = function() {
-            cargarProductosNube();
+            cargarProductosGitHub();
         };
 
-        function cargarProductosNube() {
-            if (!binId) {
-                crearBinInicialEnNube();
-                return;
-            }
-
-            fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
-                method: 'GET',
+        function cargarProductosGitHub() {
+            const url = `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FILE_PATH}`;
+            
+            fetch(url, {
                 headers: {
-                    'Content-Type': 'application/json',
-                    'X-Master-Key': JSONBIN_API_KEY
+                    'Authorization': `token ${GH_TOKEN}`,
+                    'Accept': 'application/vnd.github.v3+json'
                 }
             })
             .then(res => {
-                if (!res.ok) throw new Error("Error al conectar");
+                if (res.status === 404) {
+                    // Si el archivo no existe aún, devolvemos array vacío
+                    return { content: btoa(JSON.stringify([])), sha: "" };
+                }
+                if (!res.ok) throw new Error("Error al conectar con GitHub");
                 return res.json();
             })
             .then(data => {
-                productos = data.record || [];
+                fileSha = data.sha || "";
+                if (data.content) {
+                    // Decodificar contenido Base64 de GitHub a texto JSON
+                    const jsonString = decodeURIComponent(escape(atob(data.content)));
+                    productos = JSON.parse(jsonString);
+                } else {
+                    productos = [];
+                }
                 renderCatalogo();
                 chequearModoAdminGuardado();
             })
             .catch(err => {
                 console.error("Error al cargar:", err);
-                crearBinInicialEnNube();
-            });
-        }
-
-        function crearBinInicialEnNube() {
-            fetch('https://api.jsonbin.io/v3/b', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Master-Key': JSONBIN_API_KEY,
-                    'X-Bin-Name': 'GolEstiloCatalogoLimpio'
-                },
-                body: JSON.stringify([])
-            })
-            .then(res => res.json())
-            .then(data => {
-                binId = data.metadata.id;
-                localStorage.setItem('gol_estilo_bin_id_nuevo', binId);
                 productos = [];
                 renderCatalogo();
                 chequearModoAdminGuardado();
-            })
-            .catch(err => {
-                console.error("Error al crear bin:", err);
-                productos = [];
-                renderCatalogo();
             });
         }
 
-        function guardarEnNube(nuevosProductos, callback) {
-            const opcionesFetch = {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Master-Key': JSONBIN_API_KEY
-                },
-                body: JSON.stringify(nuevosProductos)
+        function guardarEnGitHub(nuevosProductos, callback) {
+            const url = `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FILE_PATH}`;
+            const jsonString = JSON.stringify(nuevosProductos, null, 2);
+            // Codificar texto a Base64 apto para caracteres especiales
+            const contentBase64 = btoa(unescape(encodeURIComponent(jsonString)));
+
+            const bodyData = {
+                message: "Actualización automática del catálogo desde la web",
+                content: contentBase64
             };
 
-            fetch(`https://api.jsonbin.io/v3/b/${binId}`, opcionesFetch)
+            if (fileSha) {
+                bodyData.sha = fileSha; // GitHub exige el SHA actual para sobrescribir archivos
+            }
+
+            fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${GH_TOKEN}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/vnd.github.v3+json'
+                },
+                body: JSON.stringify(bodyData)
+            })
             .then(res => {
-                if (!res.ok) throw new Error("Error en la respuesta");
+                if (!res.ok) throw new Error("Error al guardar en GitHub");
                 return res.json();
             })
-            .then(() => {
+            .then(data => {
+                fileSha = data.content.sha; // Actualizamos el SHA para futuras modificaciones
                 productos = nuevosProductos;
                 renderCatalogo();
                 if (callback) callback();
             })
             .catch(err => {
-                console.error("Error detallado:", err);
-                alert("⚠️ Error: La foto sigue siendo muy pesada o la base de datos se llenó. Intenta usar otra foto más ligera.");
+                console.error("Error:", err);
+                alert("⚠️ Error al sincronizar con GitHub. Revisa tu conexión a internet.");
             });
         }
 
@@ -275,7 +277,7 @@
             container.innerHTML = '';
 
             if (productos.length === 0) {
-                container.innerHTML = `<div class="empty-msg">El catálogo está vacío. Toca la tuerca (⚙️) abajo a la derecha, ingresa la contraseña <b>12345</b> y agrega tu primera prenda.</div>`;
+                container.innerHTML = `<div class="empty-msg">El catálogo está vacío. Toca la tuerca (⚙️) abajo a la derecha, ingresa la contraseña <b>12345</b> y agrega tu primera prenda. Se sincronizará en todos tus teléfonos.</div>`;
                 actualizarFiltros([]);
                 return;
             }
@@ -458,8 +460,8 @@
                     const img = new Image();
                     img.onload = function() {
                         const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 300;  
-                        const MAX_HEIGHT = 300;
+                        const MAX_WIDTH = 400;  
+                        const MAX_HEIGHT = 400;
                         let width = img.width;
                         let height = img.height;
 
@@ -474,7 +476,7 @@
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
 
-                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.4);
+                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.6);
                         procesarGuardadoFinal(editId, categoria, titulo, detalles, precio, compressedDataUrl);
                     };
                     img.src = event.target.result;
@@ -518,10 +520,13 @@
                 copiaProds.unshift(nuevoP);
             }
 
-            guardarEnNube(copiaProds, () => {
+            // Mensaje visual de carga mientras GitHub procesa
+            document.getElementById('btn-submit-text').innerText = "Guardando en GitHub...";
+            
+            guardarEnGitHub(copiaProds, () => {
                 document.getElementById('product-form').reset();
                 cerrarModal();
-                alert(editId ? "¡Prenda actualizada con éxito!" : "¡Prenda agregada con éxito!");
+                alert(editId ? "¡Prenda actualizada y sincronizada en GitHub!" : "¡Prenda agregada y sincronizada en GitHub!");
             });
         }
 
@@ -532,13 +537,13 @@
                 }
                 return item;
             });
-            guardarEnNube(copiaProds);
+            guardarEnGitHub(copiaProds);
         }
 
         function eliminarProducto(id) {
-            if(confirm("¿Seguro que deseas eliminar esta prenda?")) {
+            if(confirm("¿Seguro que deseas eliminar esta prenda? Se actualizará para todos los teléfonos.")) {
                 let copiaProds = productos.filter(item => item.id !== id);
-                guardarEnNube(copiaProds);
+                guardarEnGitHub(copiaProds);
             }
         }
     </script>
