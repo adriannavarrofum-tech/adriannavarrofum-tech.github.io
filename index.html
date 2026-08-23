@@ -60,13 +60,18 @@
         .btn-ws { background-color: #25D366; color: #ffffff; text-decoration: none; padding: 12px; border-radius: 8px; font-weight: 700; text-align: center; display: block; font-size: 0.95rem; transition: background 0.2s; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.2); }
         .card.agotado .btn-ws { background-color: #94a3b8; pointer-events: none; box-shadow: none; }
 
-        .admin-controls { display: none; margin-top: 10px; gap: 5px; }
+        /* Controles de Administrador en Tarjeta */
+        .admin-controls { display: none; margin-top: 12px; flex-direction: column; gap: 6px; }
         body.admin-mode .admin-controls { display: flex; }
+        .admin-row { display: flex; gap: 5px; }
         .btn-admin { padding: 6px; font-size: 0.8rem; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; flex: 1; }
         .btn-toggle { background: #d97706; }
+        .btn-edit { background: #2563eb; }
         .btn-delete { background: #dc2626; }
 
-        #fab-admin { position: fixed; bottom: 20px; right: 20px; background: #0f172a; color: white; border: none; border-radius: 50px; width: 50px; height: 50px; font-size: 20px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+        /* Botón flotante para abrir panel o cerrar sesión admin */
+        #fab-admin { position: fixed; bottom: 20px; right: 20px; background: #0f172a; color: white; border: none; border-radius: 50px; width: 50px; height: 50px; font-size: 20px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1000; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+        body.admin-mode #fab-admin { background: #059669; } /* Se pone verdecito si eres admin para indicar modo activo */
         
         #admin-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center; padding: 20px; }
         .modal-content { background: white; padding: 25px; border-radius: 12px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
@@ -85,7 +90,6 @@
 
     <header>
         <div class="header-content">
-            <!-- REEMPLAZA EL ENLACE DE ABAJO CON EL DE TU LOGO REAL CUANDO LO SUBAS -->
             <img src="https://i.imgur.com/7.png" alt="Logo Gol & Estilo Sport" class="logo-tienda" id="logo-img" onerror="this.src='https://via.placeholder.com/75?text=GES'">
             <div class="header-text">
                 <h1>Gol & Estilo Sport</h1>
@@ -94,7 +98,6 @@
         </div>
     </header>
 
-    <!-- Barra de búsqueda y Filtros Rápidos -->
     <div class="search-filter-container">
         <div class="search-box">
             <span>🔍</span>
@@ -102,7 +105,6 @@
         </div>
         <div class="filters-scroll" id="filters-container">
             <button class="filter-chip active" onclick="filtrarPorCategoria('TODOS', this)">Todos</button>
-            <!-- Las categorías se cargarán solas aquí -->
         </div>
     </div>
 
@@ -110,12 +112,13 @@
         <!-- Contenido dinámico -->
     </div>
 
-    <button id="fab-admin" onclick="pedirPassword()" title="Panel Administrador">⚙️</button>
+    <button id="fab-admin" onclick="accionBotonAdmin()" title="Panel Administrador">⚙️</button>
 
     <div id="admin-modal">
         <div class="modal-content">
-            <h3>Panel de Control - Agregar Prenda</h3>
+            <h3 id="modal-title">Panel de Control - Agregar Prenda</h3>
             <form id="product-form" onsubmit="guardarProducto(event)">
+                <input type="hidden" id="edit-id" value="">
                 <div class="form-group">
                     <label>Categoría / Equipo (Ej: 🔵🔴 FC Barcelona)</label>
                     <input type="text" id="cat-input" required placeholder="🔵🔴 FC Barcelona">
@@ -129,13 +132,13 @@
                     <input type="text" id="price-input" required value="$20.00 / 23 a BCV">
                 </div>
                 <div class="form-group">
-                    <label>Seleccionar Múltiples Imágenes (Diseño, Parches, Espalda)</label>
-                    <input type="file" id="img-input" accept="image/*" multiple required>
-                    <small style="color: #64748b; display: block; margin-top: 4px;">* Selecciona todas las fotos de los detalles de una vez.</small>
+                    <label id="label-img">Seleccionar Múltiples Imágenes (Diseño, Parches, Espalda)</label>
+                    <input type="file" id="img-input" accept="image/*" multiple>
+                    <small style="color: #64748b; display: block; margin-top: 4px;" id="info-img">* Puedes subir varias fotos a la vez.</small>
                 </div>
                 <div class="modal-buttons">
                     <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Agregar al Catálogo</button>
+                    <button type="submit" class="btn btn-primary" id="btn-submit-text">Agregar al Catálogo</button>
                 </div>
             </form>
         </div>
@@ -143,8 +146,76 @@
 
     <script>
         const PASSWORD_ADMIN = "12345"; 
-        let productos = JSON.parse(localStorage.getItem('gol_estilo_productos_v4')) || [];
+        let db;
+        let productos = [];
         let categoriaSeleccionada = 'TODOS';
+
+        // Inicializar IndexedDB
+        const request = indexedDB.open('GolEstiloDB', 1);
+
+        request.onerror = function(event) {
+            console.error("Error al abrir la base de datos", event);
+        };
+
+        request.onsuccess = function(event) {
+            db = event.target.result;
+            migrarLocalStorage();
+        };
+
+        request.onupgradeneeded = function(event) {
+            db = event.target.result;
+            if (!db.objectStoreNames.contains('productos')) {
+                db.createObjectStore('productos', { keyPath: 'id' });
+            }
+        };
+
+        function migrarLocalStorage() {
+            let viejos = JSON.parse(localStorage.getItem('gol_estilo_productos_v4')) || JSON.parse(localStorage.getItem('gol_estilo_productos_v3')) || [];
+            if (viejos.length > 0) {
+                const transaction = db.transaction(['productos'], 'readwrite');
+                const store = transaction.objectStore('productos');
+                viejos.forEach(p => store.put(p));
+                transaction.oncomplete = function() {
+                    localStorage.removeItem('gol_estilo_productos_v4');
+                    localStorage.removeItem('gol_estilo_productos_v3');
+                    cargarProductosDeDB();
+                };
+            } else {
+                cargarProductosDeDB();
+            }
+        }
+
+        function cargarProductosDeDB() {
+            if (!db) return;
+            const transaction = db.transaction(['productos'], 'readonly');
+            const store = transaction.objectStore('productos');
+            const requestAll = store.getAll();
+
+            requestAll.onsuccess = function() {
+                productos = requestAll.result || [];
+                renderCatalogo();
+                chequearModoAdminGuardado();
+            };
+        }
+
+        function guardarEnDB(nuevoP, callback) {
+            const transaction = db.transaction(['productos'], 'readwrite');
+            const store = transaction.objectStore('productos');
+            store.put(nuevoP);
+            transaction.oncomplete = function() {
+                cargarProductosDeDB();
+                if (callback) callback();
+            };
+        }
+
+        function eliminarDeDB(id) {
+            const transaction = db.transaction(['productos'], 'readwrite');
+            const store = transaction.objectStore('productos');
+            store.delete(id);
+            transaction.oncomplete = function() {
+                cargarProductosDeDB();
+            };
+        }
 
         function renderCatalogo() {
             const container = document.getElementById('catalogo-container');
@@ -157,7 +228,6 @@
                 return;
             }
 
-            // Filtrar por búsqueda y categoría seleccionada
             let prodsFiltrados = productos.filter(p => {
                 const coincideTexto = p.titulo.toLowerCase().includes(searchText) || p.categoria.toLowerCase().includes(searchText);
                 const coincideCat = (categoriaSeleccionada === 'TODOS' || p.categoria === categoriaSeleccionada);
@@ -216,8 +286,13 @@
                             </div>
                             <a href="https://wa.me/584128539283?text=${mensajeWsp}" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
                             <div class="admin-controls">
-                                <button class="btn-admin btn-toggle" onclick="toggleAgotado(${p.id})">${p.agotado ? 'Disponible' : 'Agotar'}</button>
-                                <button class="btn-admin btn-delete" onclick="eliminarProducto(${p.id})">Eliminar</button>
+                                <div class="admin-row">
+                                    <button class="btn-admin btn-toggle" onclick="toggleAgotado(${p.id})">${p.agotado ? 'Disponible' : 'Agotar'}</button>
+                                    <button class="btn-admin btn-edit" onclick="abrirEditarProducto(${p.id})">Editar / Precio</button>
+                                </div>
+                                <div class="admin-row">
+                                    <button class="btn-admin btn-delete" onclick="eliminarProducto(${p.id})">Eliminar Prenda</button>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -266,16 +341,63 @@
             });
         }
 
-        function pedirPassword() {
-            let pass = prompt("Ingrese la contraseña de Administrador:");
-            if (pass === PASSWORD_ADMIN) {
-                document.body.classList.toggle('admin-mode');
-                if(document.body.classList.contains('admin-mode')) {
-                    document.getElementById('admin-modal').style.display = 'flex';
-                }
-            } else if (pass !== null) {
-                alert("Contraseña incorrecta");
+        // --- SISTEMA DE ADMINISTRADOR INTELIGENTE ---
+        function chequearModoAdminGuardado() {
+            let esAdmin = sessionStorage.getItem('gol_admin_activo') === 'true';
+            if (esAdmin) {
+                document.body.classList.add('admin-mode');
+                document.getElementById('fab-admin').innerText = "➕";
+                document.getElementById('fab-admin').title = "Agregar Nueva Prenda";
             }
+        }
+
+        function accionBotonAdmin() {
+            let esAdmin = sessionStorage.getItem('gol_admin_activo') === 'true';
+            if (!esAdmin) {
+                let pass = prompt("Ingrese la contraseña de Administrador:");
+                if (pass === PASSWORD_ADMIN) {
+                    sessionStorage.setItem('gol_admin_activo', 'true');
+                    document.body.classList.add('admin-mode');
+                    document.getElementById('fab-admin').innerText = "➕";
+                    document.getElementById('fab-admin').title = "Agregar Nueva Prenda";
+                    abrirModalNuevo();
+                } else if (pass !== null) {
+                    alert("Contraseña incorrecta");
+                }
+            } else {
+                // Si ya es admin, el botón flotante abre directo el modal para agregar nueva prenda
+                abrirModalNuevo();
+            }
+        }
+
+        function abrirModalNuevo() {
+            document.getElementById('modal-title').innerText = "Panel de Control - Agregar Prenda";
+            document.getElementById('btn-submit-text').innerText = "Agregar al Catálogo";
+            document.getElementById('product-form').reset();
+            document.getElementById('edit-id').value = "";
+            document.getElementById('img-input').required = true;
+            document.getElementById('label-img').innerText = "Seleccionar Múltiples Imágenes";
+            document.getElementById('info-img').style.display = "block";
+            document.getElementById('admin-modal').style.display = 'flex';
+        }
+
+        function abrirEditarProducto(id) {
+            const p = productos.find(item => item.id === id);
+            if (!p) return;
+
+            document.getElementById('modal-title').innerText = "Editar Prenda / Modificar Precio";
+            document.getElementById('btn-submit-text').innerText = "Guardar Cambios";
+            document.getElementById('edit-id').value = p.id;
+            document.getElementById('cat-input').value = p.categoria;
+            document.getElementById('title-input').value = p.titulo;
+            document.getElementById('price-input').value = p.precio;
+            
+            // Al editar, la foto no es obligatoria (si no subes nuevas, se quedan las que ya tenía)
+            document.getElementById('img-input').required = false;
+            document.getElementById('label-img').innerText = "Nuevas Imágenes (Opcional - Si dejas vacío se quedan las actuales)";
+            document.getElementById('info-img').style.display = "none";
+            
+            document.getElementById('admin-modal').style.display = 'flex';
         }
 
         function cerrarModal() {
@@ -284,86 +406,106 @@
 
         function guardarProducto(e) {
             e.preventDefault();
+            const editId = document.getElementById('edit-id').value;
             const fileInput = document.getElementById('img-input');
+            
+            const categoria = document.getElementById('cat-input').value;
+            const titulo = document.getElementById('title-input').value;
+            const precio = document.getElementById('price-input').value;
 
-            if (fileInput.files.length === 0) {
-                alert("Por favor selecciona al menos una imagen.");
-                return;
+            // Si se están agregando imágenes nuevas
+            if (fileInput.files.length > 0) {
+                const files = Array.from(fileInput.files);
+                let processedImages = [];
+                let filesProcessed = 0;
+
+                files.forEach((file, index) => {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const img = new Image();
+                        img.onload = function() {
+                            const canvas = document.createElement('canvas');
+                            const MAX_WIDTH = 900;
+                            const MAX_HEIGHT = 900;
+                            let width = img.width;
+                            let height = img.height;
+
+                            if (width > height) {
+                                if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                            } else {
+                                if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+                            }
+
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+
+                            const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                            processedImages[index] = compressedDataUrl;
+                            filesProcessed++;
+
+                            if (filesProcessed === files.length) {
+                                guardarDatosFinales(editId, categoria, titulo, precio, processedImages);
+                            }
+                        };
+                        img.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                });
+            } else {
+                // Si es edición y no seleccionó fotos nuevas, mantenemos las que tenía
+                if (editId) {
+                    const pExistente = productos.find(item => item.id == editId);
+                    guardarDatosFinales(editId, categoria, titulo, precio, pExistente.imgs);
+                } else {
+                    alert("Por favor selecciona al menos una imagen para la nueva prenda.");
+                }
+            }
+        }
+
+        function guardarDatosFinales(editId, categoria, titulo, precio, imgs) {
+            let nuevoP;
+            if (editId) {
+                const pExistente = productos.find(item => item.id == editId);
+                nuevoP = {
+                    ...pExistente,
+                    categoria: categoria,
+                    titulo: titulo,
+                    precio: precio,
+                    imgs: imgs
+                };
+            } else {
+                nuevoP = {
+                    id: Date.now(),
+                    categoria: categoria,
+                    titulo: titulo,
+                    precio: precio,
+                    imgs: imgs,
+                    agotado: false
+                };
             }
 
-            const files = Array.from(fileInput.files);
-            let processedImages = [];
-            let filesProcessed = 0;
-
-            files.forEach((file, index) => {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const img = new Image();
-                    img.onload = function() {
-                        const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 800;
-                        const MAX_HEIGHT = 800;
-                        let width = img.width;
-                        let height = img.height;
-
-                        if (width > height) {
-                            if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-                        } else {
-                            if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
-                        }
-
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-
-                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                        processedImages[index] = compressedDataUrl;
-                        filesProcessed++;
-
-                        if (filesProcessed === files.length) {
-                            const nuevoP = {
-                                id: Date.now(),
-                                categoria: document.getElementById('cat-input').value,
-                                titulo: document.getElementById('title-input').value,
-                                precio: document.getElementById('price-input').value,
-                                imgs: processedImages,
-                                agotado: false
-                            };
-
-                            productos.push(nuevoP);
-                            try {
-                                localStorage.setItem('gol_estilo_productos_v4', JSON.stringify(productos));
-                                renderCatalogo();
-                                document.getElementById('product-form').reset();
-                                cerrarModal();
-                                alert("¡Prenda agregada con éxito!");
-                            } catch (err) {
-                                alert("La memoria está llena. Intenta borrar alguna prenda anterior.");
-                            }
-                        }
-                    };
-                    img.src = event.target.result;
-                };
-                reader.readAsDataURL(file);
+            guardarEnDB(nuevoP, () => {
+                document.getElementById('product-form').reset();
+                cerrarModal();
+                alert(editId ? "¡Prenda actualizada con éxito!" : "¡Prenda agregada con éxito!");
             });
         }
 
         function toggleAgotado(id) {
-            productos = productos.map(p => p.id === id ? { ...p, agotado: !p.agotado } : p);
-            localStorage.setItem('gol_estilo_productos_v4', JSON.stringify(productos));
-            renderCatalogo();
+            let p = productos.find(item => item.id === id);
+            if (p) {
+                p.agotado = !p.agotado;
+                guardarEnDB(p);
+            }
         }
 
         function eliminarProducto(id) {
             if(confirm("¿Seguro que deseas eliminar esta prenda?")) {
-                productos = productos.filter(p => p.id !== id);
-                localStorage.setItem('gol_estilo_productos_v4', JSON.stringify(productos));
-                renderCatalogo();
+                eliminarDeDB(id);
             }
         }
-
-        renderCatalogo();
     </script>
 </body>
 </html>
