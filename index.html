@@ -7,7 +7,7 @@
     <style>
         :root { --primary: #059669; --bg: #f1f5f9; --card: #ffffff; --text: #0f172a; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: var(--bg); color: var(--text); padding-bottom: 50px; }
+        body { background-color: var(--bg); color: var(--text); padding-bottom: 80px; }
         
         /* Encabezado Estilo Catálogo */
         header { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; text-align: center; padding: 35px 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
@@ -21,9 +21,13 @@
         .section-header { grid-column: 1 / -1; font-size: 1.4rem; font-weight: 800; color: #0f172a; margin-top: 30px; margin-bottom: 5px; padding-bottom: 10px; border-bottom: 3px solid #059669; text-transform: uppercase; letter-spacing: 0.5px; }
         
         /* Tarjetas de Productos */
-        .card { background: var(--card); border-radius: 14px; overflow: hidden; box-shadow: 0 6px 15px rgba(0,0,0,0.06); display: flex; flex-direction: column; border: 1px solid #e2e8f0; transition: transform 0.25s ease, box-shadow 0.25s ease; }
+        .card { background: var(--card); border-radius: 14px; overflow: hidden; box-shadow: 0 6px 15px rgba(0,0,0,0.06); display: flex; flex-direction: column; border: 1px solid #e2e8f0; transition: transform 0.25s ease, box-shadow 0.25s ease; position: relative; }
         .card:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(0,0,0,0.1); }
         
+        .card.agotado { opacity: 0.6; filter: grayscale(0.8); }
+        .badge-agotado { position: absolute; top: 10px; right: 10px; background: #dc2626; color: white; padding: 5px 10px; font-size: 0.8rem; font-weight: bold; border-radius: 6px; display: none; z-index: 10; }
+        .card.agotado .badge-agotado { display: block; }
+
         .card-img-container { width: 100%; height: 280px; background-color: #f8fafc; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         .card-img { width: 100%; height: 100%; object-fit: cover; }
         
@@ -33,7 +37,29 @@
         
         /* Botón de WhatsApp */
         .btn-ws { background-color: #25D366; color: #ffffff; text-decoration: none; padding: 12px; border-radius: 8px; font-weight: 700; text-align: center; display: block; font-size: 0.95rem; transition: background 0.2s; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.2); }
-        .btn-ws:hover { background-color: #1ebe5d; }
+        .card.agotado .btn-ws { background-color: #94a3b8; pointer-events: none; box-shadow: none; }
+
+        /* Controles de Administrador en Tarjeta */
+        .admin-controls { display: none; margin-top: 10px; gap: 5px; }
+        body.admin-mode .admin-controls { display: flex; }
+        .btn-admin { padding: 6px; font-size: 0.8rem; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; flex: 1; }
+        .btn-toggle { background: #d97706; }
+        .btn-delete { background: #dc2626; }
+
+        /* Botón flotante de Administrador */
+        #fab-admin { position: fixed; bottom: 20px; right: 20px; background: #0f172a; color: white; border: none; border-radius: 50px; width: 50px; height: 50px; font-size: 20px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+        
+        /* Modal Admin */
+        #admin-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center; padding: 20px; }
+        .modal-content { background: white; padding: 25px; border-radius: 12px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        .modal-content h3 { margin-bottom: 15px; color: #0f172a; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 0.9rem; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1rem; }
+        .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+        .btn { padding: 10px 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-primary { background: #059669; color: white; }
+        .btn-secondary { background: #64748b; color: white; }
     </style>
 </head>
 <body>
@@ -43,266 +69,151 @@
         <p>Catálogo Oficial de Camisetas de Fútbol</p>
     </header>
 
-    <div class="container">
-
-        <!-- ================= BARCELONA ================= -->
-        <div class="section-header">🔵🔴 FC Barcelona (Temporada Actual)</div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=500&q=80" class="card-img" alt="Barca Local"></div>
-            <div class="card-body">
-                <div>
-                    <h2 class="card-title">FC Barcelona - Local</h2>
-                    <div class="price">$20.00 / 23 a BCV</div>
-                </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20del%20Barcelona%20Local" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=500&q=80" class="card-img" alt="Barca Visitante"></div>
-            <div class="card-body">
-                <div>
-                    <h2 class="card-title">FC Barcelona - Visitante</h2>
-                    <div class="price">$20.00 / 23 a BCV</div>
-                </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20del%20Barcelona%20Visitante" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=500&q=80" class="card-img" alt="Barca Alternativa"></div>
-            <div class="card-body">
-                <div>
-                    <h2 class="card-title">FC Barcelona - Alternativa</h2>
-                    <div class="price">$20.00 / 23 a BCV</div>
-                </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20del%20Barcelona%20Alternativa" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
-            </div>
-        </div>
-
-
-        <!-- ================= ARSENAL ================= -->
-        <div class="section-header">🔴⚪ Arsenal FC (Temporada Actual)</div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=500&q=80" class="card-img" alt="Arsenal Local"></div>
-            <div class="card-body">
-                <div>
-                    <h2 class="card-title">Arsenal FC - Local</h2>
-                    <div class="price">$20.00 / 23 a BCV</div>
-                </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20del%20Arsenal%20Local" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://images.unsplash.com/photo-1518091043644-c1d4457512c6?auto=format&fit=crop&w=500&q=80" class="card-img" alt="Arsenal Visitante"></div>
-            <div class="card-body">
-                <div>
-                    <h2 class="card-title">Arsenal FC - Visitante</h2>
-                    <div class="price">$20.00 / 23 a BCV</div>
-                </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20del%20Arsenal%20Visitante" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=500&q=80" class="card-img" alt="Arsenal Alternativa"></div>
-            <div class="card-body">
-                <div>
-                    <h2 class="card-title">Arsenal FC - Alternativa</h2>
-                    <div class="price">$20.00 / 23 a BCV</div>
-                </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20del%20Arsenal%20Alternativa" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
-            </div>
-        </div>
-
-
-        <!-- ================= MANCHESTER CITY ================= -->
-        <div class="section-header">🩵 Manchester City (Temporada Actual)</div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://images.unsplash.com/photo-1518091043644-c1d4457512c6?auto=format&fit=crop&w=500&q=80" class="card-img" alt="City Local"></div>
-            <div class="card-body">
-                <div>
-                    <h2 class="card-title">Manchester City - Local (Haaland #9)</h2>
-                    <div class="price">$20.00 / 23 a BCV</div>
-                </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20del%20Manchester%20City%20Local" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=500&q=80" class="card-img" alt="City Visitante"></div>
-            <div class="card-body">
-                <div>
-                    <h2 class="card-title">Manchester City - Visitante</h2>
-                    <div class="price">$20.00 / 23 a BCV</div>
-                </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20del%20Manchester%20City%20Visitante" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=500&q=80" class="card-img" alt="City Alternativa"></div>
-            <div class="card-body">
-                <div>
-                    <h2 class="card-title">Manchester City - Alternativa</h2>
-                    <div class="price">$20.00 / 23 a BCV</div>
-                </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20del%20Manchester%20City%20Alternativa" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
-            </div>
-        </div>
-
-
-        <!-- ================= LIVERPOOL ================= -->
-        <div class="section-header">🔴 Liverpool FC (Temporada Actual)</div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=500&q=80" class="card-img" alt="Liverpool Local"></div>
-            <div class="card-body">
-                <div>
-                    <h2 class="card-title">Liverpool FC - Local (Mac Allister #10)</h2>
-                    <div class="price">$20.00 / 23 a BCV</div>
-                </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20de%20Liverpool%20Local" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=500&q=80" class="card-img" alt="Liverpool Visitante"></div>
-            <div class="card-body">
-                <div>
-                    <h2 class="card-title">Liverpool FC - Visitante</h2>
-                    <div class="price">$20.00 / 23 a BCV</div>
-                </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20de%20Liverpool%20Visitante" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://images.unsplash.com/photo-1518091043644-c1d4457512c6?auto=format&fit=crop&w=500&q=80" class="card-img" alt="Liverpool Alternativa"></div>
-            <div class="card-body">
-                <div>
-                    <h2 class="card-title">Liverpool FC - Alternativa</h2>
-                    <div class="price">$20.00 / 23 a BCV</div>
-                </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20de%20Liverpool%20Alternativa" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
-            </div>
-        </div>
-
-
-        <!-- ================= PSG ================= -->
-        <div class="section-header">🔵🔴 Paris Saint-Germain (Temporada Actual)</div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=500&q=80" class="card-img" alt="PSG Local"></div>
-            <div class="card-body">
-                <div>
-                    <h2 class="card-title">PSG - Local (O. Dembélé #10)</h2>
-                    <div class="price">$20.00 / 23 a BCV</div>
-                </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20del%20PSG%20Local" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=500&q=80" class="card-img" alt="PSG Visitante"></div>
-            <div class="card-body">
-                <div>
-                    <h2 class="card-title">PSG - Visitante</h2>
-                    <div class="price">$20.00 / 23 a BCV</div>
-                </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20del%20PSG%20Visitante" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=500&q=80" class="card-img" alt="PSG Alternativa"></div>
-            <div class="card-body">
-                <div>
-                    <h2 class="card-title">PSG - Alternativa</h2>
-                    <div class="price">$20.00 / 23 a BCV</div>
-                </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20del%20PSG%20Alternativa" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
-            </div>
-        </div>
-
-
-        <!-- ================= REAL MADRID ================= -->
-        <div class="section-header">⚪ Real Madrid (Temporada Actual)</div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=500&q=80" class="card-img" alt="Madrid Local"></div>
-            <div class="card-body">
-                <div>
-                    <h2 class="card-title">Real Madrid - Local</h2>
-                    <div class="price">$20.00 / 23 a BCV</div>
-                </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20del%20Real%20Madrid%20Local" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=500&q=80" class="card-img" alt="Madrid Visitante"></div>
-            <div class="card-body">
-                <div>
-                    <h2 class="card-title">Real Madrid - Visitante</h2>
-                    <div class="price">$20.00 / 23 a BCV</div>
-                </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20del%20Real%20Madrid%20Visitante" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=500&q=80" class="card-img" alt="Madrid Alternativa"></div>
-            <div class="card-body">
-                <div>
-                    <h2 class="card-title">Real Madrid - Alternativa Rosada</h2>
-                    <div class="price">$20.00 / 23 a BCV</div>
-                </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20del%20Real%20Madrid%20Alternativa" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
-            </div>
-        </div>
-
-
-        <!-- ================= CAMISETAS RETRO MÁS FAMOSAS ================= -->
-        <div class="section-header" style="margin-top: 45px;">⭐ Camisetas Retro Más Famosas</div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://images.unsplash.com/photo-1569074187119-c87815b476da?auto=format&fit=crop&w=500&q=80" class="card-img" alt="Retro Brasil"></div>
-            <div class="card-body">
-                <div>
-                    <h2 class="card-title">Retro Brasil 2002 (Ronaldo / Ronaldinho)</h2>
-                    <div class="price">$20.00 / 23 a BCV</div>
-                </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20Retro%20Brasil%202002" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://images.unsplash.com/photo-1543326727-cf6c39e8f84c?auto=format&fit=crop&w=500&q=80" class="card-img" alt="Retro Barcelona"></div>
-            <div class="card-body">
-                <div>
-                    <h2 class="card-title">Retro Barcelona 2009 (Messi)</h2>
-                    <div class="price">$20.00 / 23 a BCV</div>
-                </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20Retro%20Barcelona%202009" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://images.unsplash.com/photo-1551958219-acbc608c6377?auto=format&fit=crop&w=500&q=80" class="card-img" alt="Retro Milan"></div>
-            <div class="card-body">
-                <div>
-                    <h2 class="card-title">Retro AC Milan 2007 (Kaká)</h2>
-                    <div class="price">$20.00 / 23 a BCV</div>
-                </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20Retro%20Milan%20Kaka" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
-            </div>
-        </div>
-
+    <div class="container" id="catalogo-container">
+        <!-- Los productos se cargarán dinámicamente aquí -->
     </div>
+
+    <!-- Botón flotante de Ajustes (Admin) -->
+    <button id="fab-admin" onclick="pedirPassword()" title="Panel Administrador">⚙️</button>
+
+    <!-- Modal para Agregar Producto -->
+    <div id="admin-modal">
+        <div class="modal-content">
+            <h3>Panel de Control - Agregar Prenda</h3>
+            <form id="product-form" onsubmit="guardarProducto(event)">
+                <div class="form-group">
+                    <label>Categoría (Ej: 🔵🔴 FC Barcelona)</label>
+                    <input type="text" id="cat-input" required placeholder="🔵🔴 FC Barcelona (Temporada Actual)">
+                </div>
+                <div class="form-group">
+                    <label>Nombre de la Camiseta</label>
+                    <input type="text" id="title-input" required placeholder="FC Barcelona - Local">
+                </div>
+                <div class="form-group">
+                    <label>Precio y descripción corta</label>
+                    <input type="text" id="price-input" required value="$20.00 / 23 a BCV">
+                </div>
+                <div class="form-group">
+                    <label>Enlace de la Imagen (URL)</label>
+                    <input type="url" id="img-input" required placeholder="https://images.unsplash.com/...">
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Agregar al Catálogo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Contraseña para entrar al modo administrador
+        const PASSWORD_ADMIN = "12345"; 
+
+        // Productos iniciales por defecto
+        const productosIniciales = [
+            { id: 1, categoria: "🔵🔴 FC Barcelona (Temporada Actual)", titulo: "FC Barcelona - Local", precio: "$20.00 / 23 a BCV", img: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=500&q=80", agotado: false },
+            { id: 2, categoria: "🔵🔴 FC Barcelona (Temporada Actual)", titulo: "FC Barcelona - Visitante", precio: "$20.00 / 23 a BCV", img: "https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=500&q=80", agotado: false },
+            { id: 3, categoria: "🩵 Manchester City (Temporada Actual)", titulo: "Manchester City - Local (Haaland #9)", precio: "$20.00 / 23 a BCV", img: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?auto=format&fit=crop&w=500&q=80", agotado: false },
+            { id: 4, categoria: "⭐ Camisetas Retro Más Famosas", titulo: "Retro Brasil 2002 (Ronaldo / Ronaldinho)", precio: "$20.00 / 23 a BCV", img: "https://images.unsplash.com/photo-1569074187119-c87815b476da?auto=format&fit=crop&w=500&q=80", agotado: false }
+        ];
+
+        // Cargar productos de localStorage o usar los iniciales
+        let productos = JSON.parse(localStorage.getItem('gol_estilo_productos')) || productosIniciales;
+
+        function renderCatalogo() {
+            const container = document.getElementById('catalogo-container');
+            container.innerHTML = '';
+
+            // Agrupar por categorías
+            const categoriasUnicas = [...new Set(productos.map(p => p.categoria))];
+
+            categoriasUnicas.forEach(cat => {
+                // Crear título de sección
+                const sectionDiv = document.createElement('div');
+                sectionDiv.className = 'section-header';
+                sectionDiv.innerText = cat;
+                container.appendChild(sectionDiv);
+
+                // Filtrar productos de esta categoría
+                const prodsCat = productos.filter(p => p.categoria === cat);
+
+                prodsCat.forEach(p => {
+                    const card = document.createElement('div');
+                    card.className = `card ${p.agotado ? 'agotado' : ''}`;
+                    
+                    const mensajeWsp = encodeURIComponent(`Hola, me interesa la camisa ${p.titulo}`);
+
+                    card.innerHTML = `
+                        <div class="badge-agotado">AGOTADO</div>
+                        <div class="card-img-container"><img src="${p.img}" class="card-img" alt="${p.titulo}"></div>
+                        <div class="card-body">
+                            <div>
+                                <h2 class="card-title">${p.titulo}</h2>
+                                <div class="price">${p.precio}</div>
+                            </div>
+                            <a href="https://wa.me/584128539283?text=${mensajeWsp}" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
+                            <div class="admin-controls">
+                                <button class="btn-admin btn-toggle" onclick="toggleAgotado(${p.id})">${p.agotado ? 'Disponible' : 'Agotar'}</button>
+                                <button class="btn-admin btn-delete" onclick="eliminarProducto(${p.id})">Eliminar</button>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            });
+        }
+
+        function pedirPassword() {
+            let pass = prompt("Ingrese la contraseña de Administrador:");
+            if (pass === PASSWORD_ADMIN) {
+                document.body.classList.toggle('admin-mode');
+                if(document.body.classList.contains('admin-mode')) {
+                    document.getElementById('admin-modal').style.display = 'flex';
+                }
+            } else if (pass !== null) {
+                alert("Contraseña incorrecta");
+            }
+        }
+
+        function cerrarModal() {
+            document.getElementById('admin-modal').style.display = 'none';
+        }
+
+        function guardarProducto(e) {
+            e.preventDefault();
+            const nuevoP = {
+                id: Date.now(),
+                categoria: document.getElementById('cat-input').value,
+                titulo: document.getElementById('title-input').value,
+                precio: document.getElementById('price-input').value,
+                img: document.getElementById('img-input').value,
+                agotado: false
+            };
+
+            productos.push(nuevoP);
+            localStorage.setItem('gol_estilo_productos', JSON.stringify(productos));
+            renderCatalogo();
+            document.getElementById('product-form').reset();
+            cerrarModal();
+            alert("¡Prenda agregada con éxito!");
+        }
+
+        function toggleAgotado(id) {
+            productos = productos.map(p => p.id === id ? { ...p, agotado: !p.agotado } : p);
+            localStorage.setItem('gol_estilo_productos', JSON.stringify(productos));
+            renderCatalogo();
+        }
+
+        function eliminarProducto(id) {
+            if(confirm("¿Seguro que deseas eliminar esta prenda?")) {
+                productos = productos.filter(p => p.id !== id);
+                localStorage.setItem('gol_estilo_productos', JSON.stringify(productos));
+                renderCatalogo();
+            }
+        }
+
+        // Inicializar al cargar la página
+        renderCatalogo();
+    </script>
 </body>
 </html>
