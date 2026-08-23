@@ -5,330 +5,148 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gol & Estilo Sport - Catálogo Oficial</title>
     <style>
-        :root { --primary-dark: #059669; --bg-color: #f8fafc; --card-bg: #ffffff; --text-dark: #0f172a; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-dark); padding-bottom: 40px; }
-        header { background: #0f172a; color: #ffffff; text-align: center; padding: 25px 15px; }
-        .logo-img { max-width: 140px; height: auto; margin-bottom: 12px; border-radius: 8px; display: inline-block; }
-        header h1 { font-size: 1.6rem; color: #34d399; margin-bottom: 5px; }
-        header p { color: #94a3b8; font-size: 0.95rem; }
+        :root { --primary: #059669; --bg: #f1f5f9; --card: #ffffff; --text: #0f172a; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg); color: var(--text); padding-bottom: 50px; }
         
-        .container { max-width: 1200px; margin: 20px auto; padding: 0 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        /* Encabezado Estilo Catálogo */
+        header { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; text-align: center; padding: 35px 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        header h1 { font-size: 2.2rem; color: #34d399; font-weight: 800; letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; }
+        header p { color: #94a3b8; font-size: 1.1rem; font-weight: 500; }
         
-        .section-header { grid-column: 1 / -1; font-size: 1.3rem; font-weight: 800; color: #0f172a; margin-top: 25px; margin-bottom: 5px; padding-bottom: 8px; border-bottom: 3px solid #059669; display: flex; align-items: center; gap: 8px; }
+        /* Contenedor de la tienda */
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
         
-        .card { background: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; border: 1px solid #e2e8f0; transition: transform 0.2s ease; }
-        .card:hover { transform: translateY(-4px); }
+        /* Títulos de Categorías */
+        .section-header { grid-column: 1 / -1; font-size: 1.4rem; font-weight: 800; color: #0f172a; margin-top: 20px; margin-bottom: 5px; padding-bottom: 10px; border-bottom: 3px solid #059669; text-transform: uppercase; letter-spacing: 0.5px; }
         
-        .card-img-container { width: 100%; height: 320px; background-color: #f1f5f9; overflow: hidden; }
+        /* Tarjetas de Productos */
+        .card { background: var(--card); border-radius: 14px; overflow: hidden; box-shadow: 0 6px 15px rgba(0,0,0,0.06); display: flex; flex-direction: column; border: 1px solid #e2e8f0; transition: transform 0.25s ease, box-shadow 0.25s ease; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(0,0,0,0.1); }
+        
+        .card-img-container { width: 100%; height: 280px; background-color: #f8fafc; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         .card-img { width: 100%; height: 100%; object-fit: cover; }
         
-        .card-body { padding: 16px; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between; }
-        .card-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; color: #1e293b; line-height: 1.4; }
-        .price { font-size: 1.15rem; font-weight: 800; color: var(--primary-dark); margin-bottom: 12px; }
+        .card-body { padding: 20px; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between; }
+        .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; color: #1e293b; line-height: 1.3; }
+        .price { font-size: 1.2rem; font-weight: 800; color: var(--primary); margin-bottom: 15px; }
         
-        .btn-ws { background-color: #25D366; color: #ffffff; text-decoration: none; padding: 10px; border-radius: 8px; font-weight: 700; text-align: center; display: block; font-size: 0.95rem; transition: background 0.2s; }
+        /* Botón de WhatsApp */
+        .btn-ws { background-color: #25D366; color: #ffffff; text-decoration: none; padding: 12px; border-radius: 8px; font-weight: 700; text-align: center; display: block; font-size: 0.95rem; transition: background 0.2s; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.2); }
         .btn-ws:hover { background-color: #1ebe5d; }
     </style>
 </head>
 <body>
+
     <header>
-        <img src="https://i.ibb.co/MxkjZ0X0/logo.jpg" alt="Gol & Estilo Sport Logo" class="logo-img">
-        <h1>GOL & ESTILO SPORT</h1>
-        <p>Catálogo Oficial</p>
+        <h1>Gol & Estilo Sport</h1>
+        <p>Catálogo Oficial de Camisetas de Fútbol</p>
     </header>
 
     <div class="container">
 
         <!-- SECCIÓN 1: NUEVA TEMPORADA -->
-        <div class="section-header">🔥 NUEVA TEMPORADA ($20.00 / 23 a BCV)</div>
+        <div class="section-header">🔥 Nueva Temporada ($20.00 / 23 a BCV)</div>
 
         <div class="card">
-            <div class="card-img-container"><img src="https://i.ibb.co/bwyvwhW/img1.jpg" class="card-img" alt="Liverpool"></div>
+            <div class="card-img-container"><img src="https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=500&q=80" class="card-img" alt="Liverpool"></div>
             <div class="card-body">
                 <div>
                     <h2 class="card-title">Liverpool Alternativa 2027 (Mac Allister #10)</h2>
                     <div class="price">$20.00 / 23 a BCV</div>
                 </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20de%20Liverpool%20Mac%20Allister%2010" class="btn-ws" target="_blank">Consultar por WhatsApp</a>
+                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20de%20Liverpool%20Mac%20Allister%2010" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
             </div>
         </div>
 
         <div class="card">
-            <div class="card-img-container"><img src="https://i.ibb.co/9mdGHvT0/img2.jpg" class="card-img" alt="Man City"></div>
+            <div class="card-img-container"><img src="https://images.unsplash.com/photo-1518091043644-c1d4457512c6?auto=format&fit=crop&w=500&q=80" class="card-img" alt="Man City"></div>
             <div class="card-body">
                 <div>
                     <h2 class="card-title">Manchester City Local 2027 (Haaland #9)</h2>
                     <div class="price">$20.00 / 23 a BCV</div>
                 </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20del%20Manchester%20City%20Haaland%209" class="btn-ws" target="_blank">Consultar por WhatsApp</a>
+                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20del%20Manchester%20City%20Haaland%209" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
             </div>
         </div>
 
         <div class="card">
-            <div class="card-img-container"><img src="https://i.ibb.co/hJk0TH2C/img3.jpg" class="card-img" alt="PSG Dembele"></div>
+            <div class="card-img-container"><img src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=500&q=80" class="card-img" alt="PSG"></div>
             <div class="card-body">
                 <div>
                     <h2 class="card-title">PSG Local 2027 (O. Dembélé #10)</h2>
                     <div class="price">$20.00 / 23 a BCV</div>
                 </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20del%20PSG%20Dembele%2010" class="btn-ws" target="_blank">Consultar por WhatsApp</a>
+                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20del%20PSG%20Dembele%2010" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
             </div>
         </div>
 
         <div class="card">
-            <div class="card-img-container"><img src="https://i.ibb.co/HLWc6gdN/img4.jpg" class="card-img" alt="PSG Kvaratskhelia"></div>
-            <div class="card-body">
-                <div>
-                    <h2 class="card-title">PSG Local 2027 (Kvaratskhelia #7)</h2>
-                    <div class="price">$20.00 / 23 a BCV</div>
-                </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20del%20PSG%20de%20Kvaratskhelia%207" class="btn-ws" target="_blank">Consultar por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://i.ibb.co/FtFpgxZ/img5.jpg" class="card-img" alt="PSG Dembele Away"></div>
-            <div class="card-body">
-                <div>
-                    <h2 class="card-title">PSG Alternativa 2027 (O. Dembélé #10)</h2>
-                    <div class="price">$20.00 / 23 a BCV</div>
-                </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20alternativa%20del%20PSG%20de%20Dembele%2010" class="btn-ws" target="_blank">Consultar por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://i.ibb.co/F4zwDj7z/img6.jpg" class="card-img" alt="PSG Pacho"></div>
-            <div class="card-body">
-                <div>
-                    <h2 class="card-title">PSG Alternativa 2027 (Pacho #51)</h2>
-                    <div class="price">$20.00 / 23 a BCV</div>
-                </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20alternativa%20del%20PSG%20de%20Pacho%2051" class="btn-ws" target="_blank">Consultar por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://i.ibb.co/S4D6D4Lx/img7.jpg" class="card-img" alt="PSG Kvaratskhelia Away"></div>
-            <div class="card-body">
-                <div>
-                    <h2 class="card-title">PSG Alternativa 2027 (Kvaratskhelia #7)</h2>
-                    <div class="price">$20.00 / 23 a BCV</div>
-                </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20alternativa%20del%20PSG%20de%20Kvaratskhelia%207" class="btn-ws" target="_blank">Consultar por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://i.ibb.co/RpTF7xsJ/img8.jpg" class="card-img" alt="Juventus"></div>
+            <div class="card-img-container"><img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=500&q=80" class="card-img" alt="Juventus"></div>
             <div class="card-body">
                 <div>
                     <h2 class="card-title">Juventus Local 2027</h2>
                     <div class="price">$20.00 / 23 a BCV</div>
                 </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20de%20Juventus%20Local%202027" class="btn-ws" target="_blank">Consultar por WhatsApp</a>
+                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20de%20Juventus%20Local%202027" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
             </div>
         </div>
 
         <div class="card">
-            <div class="card-img-container"><img src="https://i.ibb.co/tMLg9rT6/img9.jpg" class="card-img" alt="Barcelona"></div>
+            <div class="card-img-container"><img src="https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=500&q=80" class="card-img" alt="Barcelona"></div>
             <div class="card-body">
                 <div>
                     <h2 class="card-title">Barcelona Visitante 2027</h2>
                     <div class="price">$20.00 / 23 a BCV</div>
                 </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20de%20Barcelona%20Visitante%202027" class="btn-ws" target="_blank">Consultar por WhatsApp</a>
+                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20de%20Barcelona%20Visitante%202027" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
             </div>
         </div>
 
         <div class="card">
-            <div class="card-img-container"><img src="https://i.ibb.co/Q7BCKC2h/img10.jpg" class="card-img" alt="Inter"></div>
-            <div class="card-body">
-                <div>
-                    <h2 class="card-title">Inter de Milán Local 2027</h2>
-                    <div class="price">$20.00 / 23 a BCV</div>
-                </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20de%20Inter%20de%20Milan%20Local%202027" class="btn-ws" target="_blank">Consultar por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://i.ibb.co/LdK44BB9/img11.jpg" class="card-img" alt="Man Utd"></div>
-            <div class="card-body">
-                <div>
-                    <h2 class="card-title">Manchester United Local 2027</h2>
-                    <div class="price">$20.00 / 23 a BCV</div>
-                </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20de%20Manchester%20United%20Local%202027" class="btn-ws" target="_blank">Consultar por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://i.ibb.co/JW03TxwM/img12.jpg" class="card-img" alt="Chelsea Away"></div>
-            <div class="card-body">
-                <div>
-                    <h2 class="card-title">Chelsea Visitante 2027</h2>
-                    <div class="price">$20.00 / 23 a BCV</div>
-                </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20de%20Chelsea%20Visitante%202027" class="btn-ws" target="_blank">Consultar por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://i.ibb.co/7JTZXfT5/img13.jpg" class="card-img" alt="Chelsea Home"></div>
-            <div class="card-body">
-                <div>
-                    <h2 class="card-title">Chelsea Local 2027</h2>
-                    <div class="price">$20.00 / 23 a BCV</div>
-                </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20de%20Chelsea%20Local%202027" class="btn-ws" target="_blank">Consultar por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://i.ibb.co/67GTCsvy/img14.jpg" class="card-img" alt="RM Pink"></div>
+            <div class="card-img-container"><img src="https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=500&q=80" class="card-img" alt="Real Madrid"></div>
             <div class="card-body">
                 <div>
                     <h2 class="card-title">Real Madrid Alternativa Rosada 2027</h2>
                     <div class="price">$20.00 / 23 a BCV</div>
                 </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20de%20Real%20Madrid%20Rosada%202027" class="btn-ws" target="_blank">Consultar por WhatsApp</a>
+                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20de%20Real%20Madrid%20Rosada%202027" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
             </div>
         </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://i.ibb.co/35qknh67/img15.jpg" class="card-img" alt="RM Away"></div>
-            <div class="card-body">
-                <div>
-                    <h2 class="card-title">Real Madrid Visitante 2027</h2>
-                    <div class="price">$20.00 / 23 a BCV</div>
-                </div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20de%20Real%20Madrid%20Visitante%202027" class="btn-ws" target="_blank">Consultar por WhatsApp</a>
-            </div>
-        </div>
-
 
         <!-- SECCIÓN 2: CAMISETAS RETRO -->
-        <div class="section-header" style="margin-top: 30px;">⭐ CAMISETAS RETRO</div>
+        <div class="section-header" style="margin-top: 35px;">⭐ Camisetas Retro</div>
 
         <div class="card">
-            <div class="card-img-container"><img src="https://i.ibb.co/1fp8bgJw/img16.jpg" class="card-img" alt="Retro Milan"></div>
+            <div class="card-img-container"><img src="https://images.unsplash.com/photo-1551958219-acbc608c6377?auto=format&fit=crop&w=500&q=80" class="card-img" alt="Retro Milan"></div>
             <div class="card-body">
-                <div><h2 class="card-title">Retro Milan 2006/2007 Kaka</h2></div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20Retro%20Milan%20Kaka" class="btn-ws" target="_blank">Consultar por WhatsApp</a>
+                <div>
+                    <h2 class="card-title">Retro Milan 2006/2007 Kaka</h2>
+                    <div class="price">$20.00 / 23 a BCV</div>
+                </div>
+                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20Retro%20Milan%20Kaka" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
             </div>
         </div>
 
         <div class="card">
-            <div class="card-img-container"><img src="https://i.ibb.co/6RG7hmp3/img17.jpg" class="card-img" alt="Retro Brasil"></div>
+            <div class="card-img-container"><img src="https://images.unsplash.com/photo-1569074187119-c87815b476da?auto=format&fit=crop&w=500&q=80" class="card-img" alt="Retro Brasil"></div>
             <div class="card-body">
-                <div><h2 class="card-title">Retro Brasil 2002 (Ronaldinho / Ronaldo)</h2></div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20Retro%20Brasil%202002" class="btn-ws" target="_blank">Consultar por WhatsApp</a>
+                <div>
+                    <h2 class="card-title">Retro Brasil 2002 (Ronaldinho / Ronaldo)</h2>
+                    <div class="price">$20.00 / 23 a BCV</div>
+                </div>
+                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20Retro%20Brasil%202002" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
             </div>
         </div>
 
         <div class="card">
-            <div class="card-img-container"><img src="https://i.ibb.co/jvdnxBBQ/img18.jpg" class="card-img" alt="Retro Man Utd"></div>
+            <div class="card-img-container"><img src="https://images.unsplash.com/photo-1543326727-cf6c39e8f84c?auto=format&fit=crop&w=500&q=80" class="card-img" alt="Retro Barcelona"></div>
             <div class="card-body">
-                <div><h2 class="card-title">Retro Manchester United 2008 Local (CR7)</h2></div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20Retro%20Manchester%20United%202008%20Local" class="btn-ws" target="_blank">Consultar por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://i.ibb.co/K31Hz48/img19.jpg" class="card-img" alt="Retro Barca"></div>
-            <div class="card-body">
-                <div><h2 class="card-title">Retro Barcelona 2009 (Messi)</h2></div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20Retro%20Barcelona%202009" class="btn-ws" target="_blank">Consultar por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://i.ibb.co/spfkt8nC/img20.jpg" class="card-img" alt="Retro Santos"></div>
-            <div class="card-body">
-                <div><h2 class="card-title">Retro Santos 2012 (Neymar Jr)</h2></div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20Retro%20Santos%202012" class="btn-ws" target="_blank">Consultar por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://i.ibb.co/QF7d4B2m/img21.jpg" class="card-img" alt="Retro Barca 15"></div>
-            <div class="card-body">
-                <div><h2 class="card-title">Retro Barcelona 2015 (Messi)</h2></div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20Retro%20Barcelona%202015" class="btn-ws" target="_blank">Consultar por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://i.ibb.co/CK6J6gF9/img22.jpg" class="card-img" alt="Barca 125"></div>
-            <div class="card-body">
-                <div><h2 class="card-title">Retro Barcelona 125 Años</h2></div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20Retro%20Barcelona%20125%20Años" class="btn-ws" target="_blank">Consultar por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://i.ibb.co/21mjbZMY/img23.jpg" class="card-img" alt="Retro RM 22"></div>
-            <div class="card-body">
-                <div><h2 class="card-title">Retro Real Madrid 2022 (Benzema)</h2></div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20Retro%20Real%20Madrid%202022" class="btn-ws" target="_blank">Consultar por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://i.ibb.co/99zZnrmb/img24.jpg" class="card-img" alt="Retro Man Utd Away"></div>
-            <div class="card-body">
-                <div><h2 class="card-title">Retro Manchester United 2008 Visitante (CR7)</h2></div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20Retro%20Manchester%20United%202008%20Visitante" class="btn-ws" target="_blank">Consultar por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://i.ibb.co/bRmVpqq9/img25.jpg" class="card-img" alt="Retro Barca 20"></div>
-            <div class="card-body">
-                <div><h2 class="card-title">Retro Barcelona 2020 (Messi)</h2></div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20Retro%20Barcelona%202020" class="btn-ws" target="_blank">Consultar por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://i.ibb.co/hJMy2SZJ/img26.jpg" class="card-img" alt="Retro Alemania"></div>
-            <div class="card-body">
-                <div><h2 class="card-title">Retro Alemania Eurocopa (Kroos)</h2></div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20Retro%20Alemania%20Eurocopa" class="btn-ws" target="_blank">Consultar por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://i.ibb.co/dJLjpqRS/img27.jpg" class="card-img" alt="Retro RM 18"></div>
-            <div class="card-body">
-                <div><h2 class="card-title">Retro Real Madrid 2018 (CR7 Kyiv)</h2></div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20Retro%20Real%20Madrid%202018" class="btn-ws" target="_blank">Consultar por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://i.ibb.co/xqBjGhzZ/img28.jpg" class="card-img" alt="Retro Sporting"></div>
-            <div class="card-body">
-                <div><h2 class="card-title">Retro Sporting de Lisboa (C. Ronaldo)</h2></div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20Retro%20Sporting%20de%20Lisboa" class="btn-ws" target="_blank">Consultar por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://i.ibb.co/7JX1kD5w/img29.jpg" class="card-img" alt="Retro Barca 11"></div>
-            <div class="card-body">
-                <div><h2 class="card-title">Retro Barcelona 2011 (Messi Wembley)</h2></div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20Retro%20Barcelona%202011" class="btn-ws" target="_blank">Consultar por WhatsApp</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-img-container"><img src="https://i.ibb.co/d0rz9SHs/img30.jpg" class="card-img" alt="Retro Arg"></div>
-            <div class="card-body">
-                <div><h2 class="card-title">Retro Argentina 2006 (Messi Debut)</h2></div>
-                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20Retro%20Argentina%202006" class="btn-ws" target="_blank">Consultar por WhatsApp</a>
+                <div>
+                    <h2 class="card-title">Retro Barcelona 2009 (Messi)</h2>
+                    <div class="price">$20.00 / 23 a BCV</div>
+                </div>
+                <a href="https://wa.me/584128539283?text=Hola,%20me%20interesa%20la%20camisa%20Retro%20Barcelona%202009" class="btn-ws" target="_blank">Pedir por WhatsApp</a>
             </div>
         </div>
 
