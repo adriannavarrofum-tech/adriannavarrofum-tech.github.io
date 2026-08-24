@@ -167,9 +167,9 @@
                     <input type="text" id="price-input" required value="$20.00">
                 </div>
                 <div class="form-group">
-                    <label>Enlace(s) de la Imagen (Separa varios enlaces con una coma)</label>
-                    <input type="text" id="img-url-input" required placeholder="https://i.imgur.com/ejemplo1.jpg, https://i.imgur.com/ejemplo2.jpg">
-                    <small style="color: #64748b; display: block; margin-top: 4px;">Pega el link directo de la foto (puedes subirlas a Imgur o cualquier servidor).</small>
+                    <label>Seleccionar Imagen(es) desde la Galería</label>
+                    <input type="file" id="img-file-input" accept="image/*" multiple style="padding: 8px; background: #f8fafc;">
+                    <small style="color: #64748b; display: block; margin-top: 4px;">Puedes elegir una o varias fotos directamente de tu teléfono.</small>
                 </div>
                 <div class="modal-buttons">
                     <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
@@ -194,12 +194,18 @@
           measurementId: "G-R3KSWY1VDJ"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        let db;
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+        } catch (err) {
+            console.error("Error al inicializar Firebase:", err);
+        }
 
         const PASSWORD_ADMIN = "12345"; 
         let productos = [];
         let categoriaSeleccionada = 'TODOS';
+        let imagenesActualesTemp = []; // Guarda las imágenes al editar
 
         let currentSlide = 0;
         setInterval(() => {
@@ -212,7 +218,11 @@
         }, 3500);
 
         window.onload = function() {
-            cargarProductosDesdeFirestore();
+            if (db) {
+                cargarProductosDesdeFirestore();
+            } else {
+                document.getElementById('catalogo-container').innerHTML = `<div class="empty-msg">Error crítico: No se pudo conectar con Firebase. Revisa tu conexión.</div>`;
+            }
         };
 
         async function cargarProductosDesdeFirestore() {
@@ -231,7 +241,7 @@
                 chequearModoAdminGuardado();
             } catch (error) {
                 console.error("Error al cargar productos: ", error);
-                document.getElementById('catalogo-container').innerHTML = `<div class="empty-msg">Error al conectar con la base de datos de Firebase.</div>`;
+                document.getElementById('catalogo-container').innerHTML = `<div class="empty-msg">Error al sincronizar con la base de datos. Verifica tu conexión a internet o intenta recargar.</div>`;
             }
         }
 
@@ -428,6 +438,8 @@
             document.getElementById('btn-submit-text').innerText = "Guardar en Firestore";
             document.getElementById('product-form').reset();
             document.getElementById('edit-id').value = "";
+            document.getElementById('img-file-input').required = true;
+            imagenesActualesTemp = [];
             document.getElementById('admin-modal').style.display = 'flex';
         }
 
@@ -443,8 +455,8 @@
             document.getElementById('details-input').value = p.detalles || "";
             document.getElementById('price-input').value = p.precio;
             
-            let imgsStr = p.imagenes ? p.imagenes.join(', ') : (p.img || "");
-            document.getElementById('img-url-input').value = imgsStr;
+            imagenesActualesTemp = p.imagenes ? p.imagenes : (p.img ? [p.img] : []);
+            document.getElementById('img-file-input').required = false; // Opcional al editar si no cambia la foto
             
             document.getElementById('admin-modal').style.display = 'flex';
         }
@@ -455,21 +467,38 @@
 
         window.guardarProducto = function(e) {
             e.preventDefault();
-            const editId = document.getElementById('edit-id').value; // <-- AQUÍ ESTABA EL CORCHETE QUE ROMPÍA TODO
+            const editId = document.getElementById('edit-id').value;
             const categoria = document.getElementById('cat-input').value;
             const titulo = document.getElementById('title-input').value;
             const detalles = document.getElementById('details-input').value;
             const precio = document.getElementById('price-input').value;
-            const imgTexto = document.getElementById('img-url-input').value;
+            const fileInput = document.getElementById('img-file-input');
 
-            const imagenes = imgTexto.split(',').map(url => url.trim()).filter(url => url.length > 0);
+            if (fileInput.files.length > 0) {
+                // Convertir las nuevas imágenes seleccionadas a Base64
+                let promesas = Array.from(fileInput.files).map(file => {
+                    return new Promise((resolve, reject) => {
+                        let reader = new FileReader();
+                        reader.onload = e => resolve(e.target.result);
+                        reader.onerror = error => reject(error);
+                        reader.readAsDataURL(file);
+                    });
+                });
 
-            if (imagenes.length === 0) {
-                alert("Por favor ingresa al menos un enlace de imagen.");
-                return;
+                Promise.all(promesas).then(base64Imgs => {
+                    ejecutarGuardadoFirestore(editId, categoria, titulo, detalles, precio, base64Imgs);
+                }).catch(err => {
+                    console.error("Error al leer archivos:", err);
+                    alert("Hubo un error al procesar las imágenes de la galería.");
+                });
+            } else {
+                // Si está editando y no seleccionó nuevas fotos, mantiene las que ya tenía
+                if (editId && imagenesActualesTemp.length > 0) {
+                    ejecutarGuardadoFirestore(editId, categoria, titulo, detalles, precio, imagenesActualesTemp);
+                } else {
+                    alert("Por favor selecciona al menos una imagen de la galería.");
+                }
             }
-
-            ejecutarGuardadoFirestore(editId, categoria, titulo, detalles, precio, imagenes);
         }
 
         async function ejecutarGuardadoFirestore(editId, categoria, titulo, detalles, precio, imagenes) {
@@ -501,7 +530,7 @@
                 cargarProductosDesdeFirestore();
             } catch (error) {
                 console.error("Error al guardar en Firestore: ", error);
-                alert("Hubo un error al guardar en la base de datos.");
+                alert("Hubo un error al guardar en la base de datos (quizás la imagen seleccionada es demasiado pesada).");
             }
         }
 
